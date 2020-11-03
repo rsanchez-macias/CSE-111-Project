@@ -74,6 +74,15 @@ def load_logged_in_user():
             'SELECT * FROM User WHERE u_userid = ?', (user_id, )
         ).fetchone()
 
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        return view(**kwargs)
+
+    return wrapped_view
+
 #Route in which users can logout.
 @bp.route('/logout')
 def logout():
