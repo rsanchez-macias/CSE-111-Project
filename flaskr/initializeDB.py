@@ -10,36 +10,25 @@ def openConnection(_dbFile):
     :param db_file: database file
     :return: Connection object or None
     """
-    print("++++++++++++++++++++++++++++++++++")
-    print("Open database: ", _dbFile)
 
     conn = None
     try:
         conn = sqlite3.connect(_dbFile)
-        print("success")
     except Error as e:
         print(e)
 
-    print("++++++++++++++++++++++++++++++++++")
 
     return conn
 
 def closeConnection(_conn, _dbFile):
-    print("++++++++++++++++++++++++++++++++++")
-    print("Close database: ", _dbFile)
 
     try:
         _conn.close()
-        print("success")
     except Error as e:
         print(e)
 
-    print("++++++++++++++++++++++++++++++++++")
-
 
 def createTables(_conn):
-    print("++++++++++++++++++++++++++++++++++")
-    print("Create tables")
 
     try:
         sql = """CREATE TABLE Books (
@@ -115,16 +104,13 @@ def createTables(_conn):
         _conn.execute(sql)
 
         _conn.commit()
-        print("success")
+        
     except Error as e:
         _conn.rollback()
         print(e)
 
-    print("++++++++++++++++++++++++++++++++++")
 
 def dropTables(_conn):
-    print("++++++++++++++++++++++++++++++++++")
-    print("Drop tables")
 
     try:
         sql = "DROP TABLE IF EXISTS Books"
@@ -165,12 +151,10 @@ def dropTables(_conn):
 
 
         _conn.commit()
-        print("success")
     except Error as e:
         _conn.rollback()
         print(e)
 
-    print("++++++++++++++++++++++++++++++++++")
 
 def bulkLoadData():
     try:
@@ -454,8 +438,6 @@ def populateStockRooms(_conn):
         print(e)
 
 def populateTables(_conn):
-    print("++++++++++++++++++++++++++++++++++")
-    print("Populate tables")
 
     try: 
         bulkLoadData()
@@ -476,14 +458,13 @@ def populateTables(_conn):
         # Populate stock rooms using available data
         populateStockRooms(_conn)
 
-        print("success")
     except Error as e: 
         print(e)
 
-    print("++++++++++++++++++++++++++++++++++")
-
 def initalizeDatabase():
     database = r"./instance/data.sqlite"
+
+    # print(os.getcwd())
     
     # create a database connection
     conn = openConnection(database)

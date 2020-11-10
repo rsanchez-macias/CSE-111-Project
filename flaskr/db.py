@@ -1,5 +1,6 @@
 import click
 import sqlite3
+import sys
 from flask import current_app, g
 from flask.cli import with_appcontext
 
@@ -39,5 +40,7 @@ def close_db(e=None):
 @with_appcontext
 def init_db_command():
     #Clear the existing data and create new table
+    sys.path.append('/flaskr/')
+    
     init_db()
     click.echo('Initialized the database.')
