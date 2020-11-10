@@ -3,6 +3,8 @@ import sqlite3
 from flask import current_app, g
 from flask.cli import with_appcontext
 
+from initializeDB import initalizeDatabase
+
 #Function to initiate application
 def init_app(app):
     app.teardown_appcontext(close_db)
@@ -11,8 +13,10 @@ def init_app(app):
 #Function to initiate database
 def init_db():
     db = get_db()
-    with current_app.open_resource('schema.sql') as f:
-        db.executescript(f.read().decode('utf8'))
+
+    initalizeDatabase()
+    # with current_app.open_resource('schema.sql') as f:
+    #     db.executescript(f.read().decode('utf8'))
 
 #Function to get database
 def get_db():
