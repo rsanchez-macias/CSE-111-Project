@@ -463,6 +463,8 @@ def populateTables(_conn):
 
 def initalizeDatabase():
     database = r"./instance/data.sqlite"
+
+    # print(os.getcwd())
     
     # create a database connection
     conn = openConnection(database)
