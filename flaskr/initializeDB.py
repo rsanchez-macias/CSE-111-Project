@@ -31,12 +31,22 @@ def closeConnection(_conn, _dbFile):
 def createTables(_conn):
 
     try:
-        sql = """CREATE TABLE Books (
+        sql = """CREATE TABLE RawBooks (
                     b_goodreadsid DECIMAL(13, 0), 
                     b_isbn VARCHAR(13) PRIMARY KEY, 
                     b_authornames VARCHAR(40) NOT NULL, 
                     b_publishedyear DECIMAL(4,0) NOT NULL,
-                    b_title VARCHAR(50) NOT NULL)"""
+                    b_title VARCHAR(50) NOT NULL
+                )"""
+        _conn.execute(sql)
+
+        sql = """CREATE TABLE Books (
+                    b_goodreadsid DECIMAL(13, 0), 
+                    b_isbn VARCHAR(13) PRIMARY KEY, 
+                    b_authorid INTEGER NOT NULL,
+                    b_publishedyear DECIMAL(4,0) NOT NULL,
+                    b_title VARCHAR(50) NOT NULL 
+                )"""
         _conn.execute(sql)
 
         sql = """CREATE TABLE RawBookTags (
@@ -103,6 +113,11 @@ def createTables(_conn):
                     r_reason TEXT)"""
         _conn.execute(sql)
 
+        sql = """CREATE TABLE Author (
+                    a_authorid INTEGER PRIMARY KEY AUTOINCREMENT,
+                    a_authorname VARCHAR(40) NOT NULL)"""
+        _conn.execute(sql)
+
         _conn.commit()
         
     except Error as e:
@@ -114,6 +129,9 @@ def dropTables(_conn):
 
     try:
         sql = "DROP TABLE IF EXISTS Books"
+        _conn.execute(sql)
+
+        sql = "DROP TABLE IF EXISTS RawBooks"
         _conn.execute(sql)
 
         sql = "DROP TABLE IF EXISTS RawBookTags"
@@ -147,6 +165,9 @@ def dropTables(_conn):
         _conn.execute(sql)
 
         sql = "DROP TABLE IF EXISTS ReservedBooks"
+        _conn.execute(sql)
+
+        sql = "DROP TABLE IF EXISTS Author"
         _conn.execute(sql)
 
 
@@ -209,7 +230,7 @@ def cleanBooksTable(_conn):
     try: 
         sql = """
                 delete 
-                from Books
+                from RawBooks
                 where not length(b_title) > 0 or 
                     not b_title glob '*[A-Za-z]*' or 
                     not length(cast(b_publishedyear as text)) > 0 or
@@ -377,6 +398,9 @@ def dropExtraTables(_conn):
         sql = "DROP TABLE IF EXISTS RawTags"
         _conn.execute(sql)
 
+        sql = "DROP TABLE IF EXISTS RawBooks"
+        _conn.execute(sql)
+
         _conn.commit()
 
     except Error as e: 
@@ -411,7 +435,7 @@ def populateStockRooms(_conn):
     try:
         sql = """
             select b_isbn
-            from Books
+            from RawBooks
             where substr(b_authornames, 1, 1) >= ? and
                 substr(b_authornames, 1, 1) <= ?
         """
@@ -437,6 +461,55 @@ def populateStockRooms(_conn):
         _conn.rollback()
         print(e)
 
+def populateAuthorTable(_conn):
+
+    try:
+        sql = """
+            insert into Author (a_authorname)
+            select distinct b_authornames
+            from RawBooks
+        """
+
+        _conn.execute(sql)
+
+        _conn.commit()
+    except Error as e: 
+        _conn.rollback()
+        print(e)
+
+def populateBooksTable(_conn):
+
+    try:
+
+        sql = """
+            alter table RawBooks
+            add column b_authorid INTEGER
+        """
+
+        _conn.execute(sql)
+
+        sql = """
+            update RawBooks 
+            set b_authorid = 
+            (select a_authorid from Author where b_authornames = a_authorname)
+        """
+
+        _conn.execute(sql)
+
+        sql = """
+            insert into Books
+            select R.b_goodreadsid, R.b_isbn, R.b_authorid, R.b_publishedyear, R.b_title
+            from RawBooks R
+        """
+
+        _conn.execute(sql)
+
+        _conn.commit()
+    except Error as e: 
+        _conn.rollback()
+        print(e)
+
+
 def populateTables(_conn):
 
     try: 
@@ -452,11 +525,17 @@ def populateTables(_conn):
         # Populate new table from raw data
         populateBookTagsTable(_conn)
 
-        # Drop original tables
-        dropExtraTables(_conn)
+        # Separate author from large table
+        populateAuthorTable(_conn)
+
+        # Clean and insert book data
+        populateBooksTable(_conn)
 
         # Populate stock rooms using available data
         populateStockRooms(_conn)
+
+        # Drop original tables
+        dropExtraTables(_conn)
 
     except Error as e: 
         print(e)
