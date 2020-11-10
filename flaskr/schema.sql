@@ -8,3 +8,4 @@ CREATE TABLE User (
   u_email TEXT NOT NULL,
   u_password TEXT NOT NULL
 );
+
