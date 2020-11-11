@@ -1,1 +1,3 @@
 *pyc
+flaskr/__pycache__/*pyc
+instance/data.sqlite
