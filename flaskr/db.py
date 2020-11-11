@@ -640,7 +640,9 @@ def insertCheckedEntry(_conn, entry):
         sql = "INSERT INTO CheckedBooks VALUES(?, ?, ?, ?)"
 
         _conn.execute(sql, entry)
+        _conn.commit()
     except Error as e:
+        _conn.rollback()
         print(e)
 
 def insertReservedEntry(_conn, entry):
@@ -649,7 +651,9 @@ def insertReservedEntry(_conn, entry):
         sql = "INSERT INTO ReservedBooks VALUES(?, ?, ?, ?)"
 
         _conn.execute(sql, entry)
+        _conn.commit()
     except Error as e:
+        _conn.rollback()
         print(e)
 
 def checkoutSampleBooks(_conn):
@@ -671,8 +675,10 @@ def checkoutSampleBooks(_conn):
                 from StockRoom, Books, University
                 where b_isbn = s_isbn and 
                     s_universityid = un_id and 
-                    un_id = ? and 
-                    b_isbn = ?)
+                    s_universityid = ? and 
+                    s_isbn = ?)
+            where s_isbn = ? and 
+                s_universityid = ?
         """
 
         cur = _conn.cursor()
@@ -711,7 +717,7 @@ def checkoutSampleBooks(_conn):
                     ]
                     insertCheckedEntry(_conn, newEntry)
 
-            args = [un_id, isbn]
+            args = [un_id, isbn, un_id, isbn]
             _conn.execute(sqlUpdateStockRoomCount, args)
 
             _conn.commit()
