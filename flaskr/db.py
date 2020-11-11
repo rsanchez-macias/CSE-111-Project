@@ -4,7 +4,7 @@ import sys
 from flask import current_app, g
 from flask.cli import with_appcontext
 
-from initializeDB import initalizeDatabase
+from initializeDB import initializeDatabase
 
 #Function to initiate application
 def init_app(app):
@@ -15,7 +15,7 @@ def init_app(app):
 def init_db():
     db = get_db()
 
-    initalizeDatabase()
+    initializeDatabase()
     # with current_app.open_resource('schema.sql') as f:
     #     db.executescript(f.read().decode('utf8'))
 

@@ -1,8 +1,16 @@
+from datetime import date
+from random import sample
 import sqlite3
 import os
 import random
 from sqlite3 import Error
+import datetime
 
+from werkzeug.security import generate_password_hash
+
+users_file = "./book_data/users.txt"
+checked_file = "./book_data/inputChecked.txt"
+reserved_file = "./book_data/inputReserved.txt"
 
 def openConnection(_dbFile):
     """ create a database connection to the SQLite database
@@ -86,7 +94,8 @@ def createTables(_conn):
                     u_userid INTEGER PRIMARY KEY AUTOINCREMENT,
                     u_name TEXT NOT NULL,
                     u_email TEXT NOT NULL,
-                    u_password TEXT NOT NULL)"""
+                    u_password TEXT NOT NULL,
+                    u_universityid TEXT NOT NULL)"""
         _conn.execute(sql)
 
         sql = """CREATE TABLE Librarian (
@@ -109,7 +118,7 @@ def createTables(_conn):
         sql = """CREATE TABLE ReservedBooks (
                     r_isbn VARCHAR(13),
                     r_foruserid INTEGER,
-                    r_currentuserid INTEGER,
+                    r_reservatindate DATE,
                     r_reason TEXT)"""
         _conn.execute(sql)
 
@@ -509,6 +518,28 @@ def populateBooksTable(_conn):
         _conn.rollback()
         print(e)
 
+def populateSampleUsers(_conn):
+
+    raw_users = getLinesFromFile(users_file)
+
+    sampleUsers = []
+    for user in raw_users:
+        raw_user = user.split()
+        
+        newEntry = (raw_user[0], raw_user[1], generate_password_hash(raw_user[2]), raw_user[3])
+    
+        sampleUsers.append(newEntry)
+
+    try:
+        sql = """INSERT INTO User(u_name, u_email, u_password, u_universityid) VALUES(?, ?, ?, ?)"""
+
+        _conn.executemany(sql, sampleUsers)
+
+        _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
 
 def populateTables(_conn):
 
@@ -534,13 +565,182 @@ def populateTables(_conn):
         # Populate stock rooms using available data
         populateStockRooms(_conn)
 
+        # Insert sample users
+        populateSampleUsers(_conn)
+
         # Drop original tables
         dropExtraTables(_conn)
 
     except Error as e: 
         print(e)
 
-def initalizeDatabase():
+
+def getLinesFromFile(_file):
+    """ Returns the contents of a file as a list."""
+
+    with open(_file, "r") as f:
+        raw_input = f.readlines()
+
+    input = []
+    for raw_line in raw_input:
+        line = raw_line.rstrip()
+        if line:
+            input.append(line.rstrip())
+    
+    return input
+
+
+def insertCheckedEntry(_conn, entry):
+
+    try:
+        sql = "INSERT INTO CheckedBooks VALUES(?, ?, ?, ?)"
+
+        _conn.execute(sql, entry)
+    except Error as e:
+        print(e)
+
+def insertReservedEntry(_conn, entry):
+
+    try:
+        sql = "INSERT INTO ReservedBooks VALUES(?, ?, ?, ?)"
+
+        _conn.execute(sql, entry)
+    except Error as e:
+        print(e)
+
+def checkoutSampleBooks(_conn):
+
+    try: 
+        sqlGetBook = """
+            select b_isbn, s_bookcount
+            from Books, StockRoom, University
+            where b_isbn = s_isbn and 
+                s_universityid = un_id and 
+                un_id = ? and 
+                b_isbn = ?
+        """
+
+        sqlUpdateStockRoomCount = """
+            update StockRoom
+            set s_bookcount = (
+                select s_bookcount - 1
+                from StockRoom, Books, University
+                where b_isbn = s_isbn and 
+                    s_universityid = un_id and 
+                    un_id = ? and 
+                    b_isbn = ?)
+        """
+
+        cur = _conn.cursor()
+
+        simulatedInput = getLinesFromFile(checked_file)
+
+
+        for line in simulatedInput:
+            words = line.split()
+            
+            un_id = int(words[0])
+            user_id = int(words[1])
+            isbn = words[2]
+
+            args = [un_id, isbn]
+
+            cur.execute(sqlGetBook, args)
+            bookEntry = cur.fetchall()
+
+            if bookEntry:
+                count = bookEntry[0][1]
+
+                if count >= 1:
+
+                    checkedDate = datetime.datetime.today()
+                    #tempDate
+                    expirationDate = checkedDate + datetime.timedelta(days=30)
+
+                    checkedDate = checkedDate.strftime('%Y-%m-%d')
+                    expirationDate = expirationDate.strftime('%Y-%m-%d')
+                    newEntry = [
+                        isbn,
+                        user_id,
+                        checkedDate,
+                        expirationDate
+                    ]
+                    insertCheckedEntry(_conn, newEntry)
+
+            args = [un_id, isbn]
+            _conn.execute(sqlUpdateStockRoomCount, args)
+
+            _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
+def reserveSampleBooks(_conn):
+    
+    reason_location = "NOT IN SCHOOL"
+    reason_copies = "NO MORE COPIES"
+
+    try: 
+        sqlGetBook = """
+            select b_isbn, s_bookcount
+            from Books, StockRoom, University
+            where b_isbn = s_isbn and 
+                s_universityid = un_id and 
+                un_id = ? and 
+                b_isbn = ?
+        """
+
+        cur = _conn.cursor()
+
+        simulatedInput = getLinesFromFile(reserved_file)
+
+
+        for line in simulatedInput:
+            words = line.split()
+            
+            un_id = int(words[0])
+            user_id = int(words[1])
+            isbn = words[2]
+
+            args = [un_id, isbn]
+
+            cur.execute(sqlGetBook, args)
+            bookEntry = cur.fetchall()
+
+            reservedDate = datetime.datetime.today().strftime('%Y-%m-%d')
+
+            newEntry = []
+
+            if len(bookEntry) != 0:
+                count = bookEntry[0][1]
+
+                if count == 0:
+
+                    newEntry = [
+                        isbn,
+                        user_id,
+                        reservedDate,
+                        reason_copies
+                    ]
+            else:
+                newEntry = [
+                        isbn,
+                        user_id,
+                        reservedDate,
+                        reason_location
+                    ]    
+                
+            insertReservedEntry(_conn, newEntry)
+            _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
+def initializeDatabase():
     database = r"./instance/data.sqlite"
 
     # print(os.getcwd())
@@ -551,6 +751,10 @@ def initalizeDatabase():
         dropTables(conn)
         createTables(conn)
         populateTables(conn)
+
+
+        checkoutSampleBooks(conn)
+        reserveSampleBooks(conn)
 
 
     closeConnection(conn, database)
