@@ -4,6 +4,7 @@ import sys
 import os
 import random
 import datetime
+import string
 from sqlite3 import Error
 from flask import current_app, g
 from flask.cli import with_appcontext
@@ -562,24 +563,104 @@ def populateBooksTable(_conn):
         _conn.rollback()
         print(e)
 
+
+def getUserIDFromEmail(_conn, u_email):
+
+    try:
+        sql = "SELECT u_userid FROM User WHERE u_email = ?"
+
+        cur = _conn.cursor()
+
+        cur.execute(sql, [u_email])
+
+        user_id = cur.fetchone()
+
+        return user_id[0]
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+def insertLibraryUsers(_conn, user_emails):
+    """
+    Reference: https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
+    Use: For random majors for sample data
+    """
+
+    try:
+        libraryUsers = []
+
+        for user_email in user_emails:
+            randomMajor = ''.join(random.choice(string.printable) for _ in range(10))
+            user_id = getUserIDFromEmail(_conn, user_email)
+            
+            newEntry = [user_id, randomMajor]
+
+            libraryUsers.append(newEntry)
+
+        sql = "INSERT INTO LibraryUser VALUES(?, ?)"
+
+        _conn.executemany(sql, libraryUsers)
+        _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
+def insertLibrarians(_conn, user_emails):
+
+    try:
+        librarians = []
+
+        for user_email in user_emails:
+            randomSalary = random.randrange(30000, 80000, 2500)
+            user_id = getUserIDFromEmail(_conn, user_email)
+            
+            newEntry = [user_id, randomSalary]
+
+            librarians.append(newEntry)
+
+        sql = "INSERT INTO Librarian VALUES(?, ?)"
+
+        _conn.executemany(sql, librarians)
+        _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
 def populateSampleUsers(_conn):
 
     raw_users = getLinesFromFile(users_file)
 
     sampleUsers = []
-    for user in raw_users:
+    sampleLibraryUsers = []
+    sampleLibrarians = []
+
+    for i, user in enumerate(raw_users):
         raw_user = user.split()
         
-        newEntry = (raw_user[0], raw_user[1], generate_password_hash(raw_user[2]), raw_user[3])
+        newEntryUser = (raw_user[0], raw_user[1], generate_password_hash(raw_user[2]), raw_user[3])
     
-        sampleUsers.append(newEntry)
+        sampleUsers.append(newEntryUser)
+
+        if i == len(raw_users) - 1:
+            sampleLibrarians.append(raw_user[1])
+            break
+        
+        sampleLibraryUsers.append(raw_user[1])
+
 
     try:
         sql = """INSERT INTO User(u_name, u_email, u_password, u_universityid) VALUES(?, ?, ?, ?)"""
-
         _conn.executemany(sql, sampleUsers)
 
         _conn.commit()
+
+        insertLibrarians(_conn, sampleLibrarians)
+        insertLibraryUsers(_conn, sampleLibraryUsers)
 
     except Error as e:
         _conn.rollback()
