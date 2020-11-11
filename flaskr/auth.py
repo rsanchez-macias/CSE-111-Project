@@ -4,26 +4,24 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from flaskr.db import get_db
+from random import randint
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-#Route in which users can register and be added to the 'User' table.
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
     if request.method == 'POST':
         u_name = request.form['username']
         u_password = request.form['password']
         u_email = request.form['email']
+        userType = request.form['userType']
+        school = request.form['school']
+        major = request.form['major']
+        
         db = get_db()
         error = None
-        if not u_name:
-            error = 'Username is required.'
-        elif not u_email:
-            error = 'Email is required.'
-        elif not u_password:
-            error = 'Password is required.'
-        
-        elif db.execute(
+      
+        if db.execute(
             'SELECT u_userid FROM User WHERE u_email = ?', (u_email,)
         ).fetchone() is not None:
             error = 'Email {} is already registered.'.format(u_email)
@@ -33,6 +31,20 @@ def register():
                 'INSERT INTO User (u_name, u_email, u_password) VALUES (?, ?, ?)',
                 (u_name, u_email, generate_password_hash(u_password))
             )
+
+            cur = db.cursor()
+            cur.execute('SELECT u_userid FROM User WHERE u_email = ?', (u_email,))
+            q = cur.fetchone()
+
+            if userType == "student":
+                db.execute(
+                'INSERT INTO LibraryUser (lu_userid,lu_major) VALUES (?,?)',
+                (q["u_userid"], major))
+            if userType == "librarian":
+                db.execute(
+                'INSERT INTO Librarian (l_userid,l_salary) VALUES (?,?)',
+                (q["u_userid"], randint(30000,85000)))
+
             db.commit()
             return redirect(url_for('auth.login'))
 

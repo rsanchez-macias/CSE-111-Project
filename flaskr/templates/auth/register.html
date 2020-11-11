@@ -19,6 +19,35 @@
     <label for="password">Password</label>
     <input name="password" id="password" required type="password">
 
+    <br><br>
+
+    <label for="userType">User</label>
+    <select name="userType" id="userType" required>
+        <option value=""></option>
+        <option value="librarian">Librarian</option>
+        <option value="student">Student</option>
+    </select>
+
+    <label for="school">School</label>
+    <select name="school" id="school" required>
+        <option value=""></option>
+        <option value="UC Merced">UC Merced</option>
+        <option value="UC Riverside">UC Riverside</option>
+        <option value="UC San Diego">UC San Diego</option>
+        <option value="UC Santa Barbara">UC Santa Barbara</option>
+        <option value="UC Davis">UC Davis</option>
+    </select>
+
+    <br><br>
+
+    If student, enter major
+
+    <label for="major"></label>
+    <input name="major" id="major">
+
+    <br><br>
+
     <input type="submit" value="Register">
+
 </form>
 {% endblock %}
