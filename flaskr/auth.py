@@ -26,13 +26,18 @@ def register():
         ).fetchone() is not None:
             error = 'Email {} is already registered.'.format(u_email)
 
+
         if error is None:
+            
+            cur = db.cursor()
+            cur.execute('SELECT un_id FROM University WHERE un_name = ?', [school])
+            school_id = cur.fetchone()
+
             db.execute(
-                'INSERT INTO User (u_name, u_email, u_password) VALUES (?, ?, ?)',
-                (u_name, u_email, generate_password_hash(u_password))
+                'INSERT INTO User (u_name, u_email, u_password, u_universityid) VALUES (?, ?, ?, ?)',
+                (u_name, u_email, generate_password_hash(u_password), school_id[0])
             )
 
-            cur = db.cursor()
             cur.execute('SELECT u_userid FROM User WHERE u_email = ?', (u_email,))
             q = cur.fetchone()
 
