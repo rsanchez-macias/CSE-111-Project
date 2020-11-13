@@ -2,7 +2,7 @@
 -- Queries to support use cases 
 ---- Example shown below. Will be used as prepared statements in backend.
 
--- INSERTING NEW USERS TO DATASET
+-- INSERTING NEW USERS TO DATASET (2)
 
 INSERT INTO 
     User (u_name, u_email, u_password, u_universityid) 
@@ -20,8 +20,22 @@ INSERT INTO Librarian
     (l_userid,l_salary) 
 VALUES (12, 60000);
 
+-- DELETING USERS
 
--- SEARCHING FOR BOOKS
+DELETE FROM User
+WHERE u_email = "arce@pokemon.com" AND 
+    u_universityid = 1;
+
+---- GET ID USER ID BEFORE DELETING
+DELETE FROM LibraryUser
+WHERE lu_userid = 5;
+
+SELECT u_userid
+FROM User
+WHERE u_email = "arce@pokemon.com";
+
+
+-- SEARCHING FOR BOOKS (3)
 
 SELECT *
 FROM Books
@@ -43,7 +57,41 @@ WHERE b_authorid = a_authorid AND
     a_authorname LIKE "%J.K. Rowling%";
 
 
----- Availability for every book in specific univeristy
+-- TODO: search by more than one attribute
+
+SELECT b_isbn, b_title
+FROM Books, Author
+WHERE b_authorid = a_authorid AND 
+    a_authorname LIKE "%Donald Trump%"
+
+UNION
+
+SELECT b_isbn, b_title
+FROM Books, BookTags, Tags
+WHERE b_bookid = bt_bookid AND 
+    bt_tagid = t_tagid AND 
+    t_description = "comedy";
+
+
+
+---- Searches for books with two given genres
+SELECT b_isbn, b_title
+FROM Books, BookTags, Tags
+WHERE b_bookid = bt_bookid AND 
+    bt_tagid = t_tagid AND 
+    t_description = "romance"
+
+INTERSECT
+
+SELECT b_isbn, b_title
+FROM Books, BookTags, Tags
+WHERE b_bookid = bt_bookid AND 
+    bt_tagid = t_tagid AND 
+    t_description = "novel";
+
+
+
+---- Availability for every book in specific univeristy (1)
 
 SELECT b_isbn, 
     CASE 
@@ -81,15 +129,15 @@ WHERE s_isbn = b_isbn AND
 ---- has any count in their StockRoom. Checks made in backend.
 
 DELETE FROM StockRoom 
-where s_isbn = "439785960" and 
+WHERE s_isbn = "439785960" AND 
     s_universityid = 1;
 
 ----- Only if no StockRoom has it anymore
 DELETE FROM Books
-where b_isbn = "439785960";
+WHERE b_isbn = "439785960";
 
 DELETE FROM BookTags
-where bt_bookid = 1;
+WHERE bt_bookid = 1;
 
 
 -- ADDING MORE BOOKS TO DATASET
@@ -115,21 +163,21 @@ VALUES (32075672, 1);
 
 ---- Need to make sure it doesn't cause other conflicts
 UPDATE Books
-set b_isbn = "081298840X"
-where b_isbn = "081298840B";
+SET b_isbn = "081298840X"
+WHERE b_isbn = "081298840B";
 
 UPDATE Books
-set b_title = "When Breath Becomes Air"
-where b_isbn = "081298840X";
+SET b_title = "When Breath Becomes Air"
+WHERE b_isbn = "081298840X";
 
 UPDATE Books
-set b_publishedyear = 2016
-where b_isbn = "081298840X";
+SET b_publishedyear = 2016
+WHERE b_isbn = "081298840X";
 
----- Check if author name is already in database
+---- Check if author name is already in database beforehand
 UPDATE Author
-set a_authorname = "Paul Kalanithi"
-where a_authorid = 4067;
+SET a_authorname = "Paul Kalanithi"
+WHERE a_authorid = 4067;
 
 
 ---------------------
@@ -179,12 +227,19 @@ WHERE s_isbn = "439785960";
 INSERT INTO CheckedBooks 
 VALUES("60929871", 2, "2020-11-08", "2020-12-07");
 
+SELECT cb_userid, COUNT(*) as count
+FROM CheckedBooks
+GROUP BY cb_userid;
+
 
 -- RESERVE BOOKS
 
 INSERT INTO ReservedBooks 
 VALUES("60929871", 1, "2020-11-08", "NO MORE COPIES");
 
+SELECT r_isbn, count(*)
+FROM ReservedBooks 
+GROUP BY r_isbn;
 
 
 -- POSSIBLE NEW USE CASE: FUN FACTS
@@ -198,4 +253,9 @@ GROUP BY t_description;
 SELECT un_name, SUM(s_bookcount)
 FROM StockRoom, University
 WHERE un_id = s_universityid
+GROUP BY un_id;
+
+SELECT un_name, COUNT(*) AS number_of_users
+FROM University, User
+WHERE un_id = u_universityid
 GROUP BY un_id;
