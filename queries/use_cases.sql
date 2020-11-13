@@ -57,12 +57,27 @@ WHERE b_authorid = a_authorid AND
     a_authorname LIKE "%J.K. Rowling%";
 
 
+---- books in a given univeristy
+SELECT b_isbn, b_title, a_authorname, s_bookcount
+FROM Books, StockRoom, Author
+WHERE b_isbn = s_isbn AND 
+    b_authorid = a_authorid AND 
+    s_universityid = 1;
+
+SELECT b_isbn, b_title, a_authorname, s_bookcount
+FROM Books, StockRoom, Author
+WHERE b_isbn = s_isbn AND 
+    b_authorid = a_authorid AND 
+    s_universityid = 1 AND 
+    b_isbn = 1416524797;
+
+
 -- TODO: search by more than one attribute
 
 SELECT b_isbn, b_title
 FROM Books, Author
 WHERE b_authorid = a_authorid AND 
-    a_authorname LIKE "%Donald Trump%"
+    a_authorname LIKE "%J.K. Rowling%"
 
 UNION
 
@@ -132,10 +147,13 @@ DELETE FROM StockRoom
 WHERE s_isbn = "439785960" AND 
     s_universityid = 1;
 
------ Only if no StockRoom has it anymore
+
+---- Only if no StockRoom has it anymore
 DELETE FROM Books
 WHERE b_isbn = "439785960";
 
+
+---- Remove book tags as well if no other StockRoom has it
 DELETE FROM BookTags
 WHERE bt_bookid = 1;
 
@@ -152,7 +170,7 @@ VALUES (4067, "Paul Kalanithii");
 
 ---- Insert into library from librarian 
 INSERT INTO StockRoom
-VALUES (1, "081298840X", 4);
+VALUES (1, "081298840B", 4);
 
 ---- Optional: add genres to the book
 INSERT INTO BookTags
@@ -163,6 +181,10 @@ VALUES (32075672, 1);
 
 ---- Need to make sure it doesn't cause other conflicts
 UPDATE Books
+SET b_isbn = "081298840X"
+WHERE b_isbn = "081298840B";
+
+UPDATE StockRoom
 SET b_isbn = "081298840X"
 WHERE b_isbn = "081298840B";
 
@@ -227,7 +249,7 @@ WHERE s_isbn = "439785960";
 INSERT INTO CheckedBooks 
 VALUES("60929871", 2, "2020-11-08", "2020-12-07");
 
-SELECT cb_userid, COUNT(*) as count
+SELECT cb_userid, COUNT(*) AS count
 FROM CheckedBooks
 GROUP BY cb_userid;
 
@@ -237,16 +259,16 @@ GROUP BY cb_userid;
 INSERT INTO ReservedBooks 
 VALUES("60929871", 1, "2020-11-08", "NO MORE COPIES");
 
-SELECT r_isbn, count(*)
+SELECT r_isbn, count(*) As count
 FROM ReservedBooks 
 GROUP BY r_isbn;
 
 
 -- POSSIBLE NEW USE CASE: FUN FACTS
 
-SELECT t_description as genre, COUNT(*) as count 
+SELECT t_description AS genre, COUNT(*) AS count 
 FROM Books, BookTags, Tags 
-WHERE b_bookid = bt_bookid and 
+WHERE b_bookid = bt_bookid AND 
     bt_tagid = t_tagid 
 GROUP BY t_description;
 
