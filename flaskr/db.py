@@ -646,9 +646,9 @@ def populateSampleUsers(_conn):
     
         sampleUsers.append(newEntryUser)
 
-        if i == len(raw_users) - 1:
+        if i >= len(raw_users) - 5:
             sampleLibrarians.append(raw_user[1])
-            break
+            continue
         
         sampleLibraryUsers.append(raw_user[1])
 
