@@ -14,11 +14,11 @@ VALUES ("Jose", "jose.nose@gmail.com", "not actual password (stored as hashes)",
 
 INSERT INTO 
     LibraryUser (lu_userid,lu_major)
-VALUES (11, "Computer Science");
+VALUES (94, "Computer Science");
 
 INSERT INTO Librarian 
-    (l_userid,l_salary) 
-VALUES (12, 60000);
+    (l_userid, l_salary) 
+VALUES (95, 60000);
 
 -- DELETING USERS
 
