@@ -3,10 +3,12 @@ import sqlite3
 import sys
 import os
 import random
+import datetime
+import string
 from sqlite3 import Error
 from flask import current_app, g
 from flask.cli import with_appcontext
-
+from werkzeug.security import generate_password_hash
 
 #Function to initiate application
 def init_app(app):
@@ -17,7 +19,7 @@ def init_app(app):
 def init_db():
     db = get_db()
 
-    initalizeDatabase()
+    initializeDatabase()
     # with current_app.open_resource('schema.sql') as f:
     #     db.executescript(f.read().decode('utf8'))
 
@@ -51,6 +53,10 @@ def init_db_command():
 ########## POPULATE TABLES #################
 ############################################
 
+users_file = "./book_data/users.txt"
+checked_file = "./book_data/inputChecked.txt"
+reserved_file = "./book_data/inputReserved.txt"
+
 def openConnection(_dbFile):
     """ create a database connection to the SQLite database
         specified by the db_file
@@ -78,12 +84,22 @@ def closeConnection(_conn, _dbFile):
 def createTables(_conn):
 
     try:
-        sql = """CREATE TABLE Books (
+        sql = """CREATE TABLE RawBooks (
                     b_goodreadsid DECIMAL(13, 0), 
                     b_isbn VARCHAR(13) PRIMARY KEY, 
                     b_authornames VARCHAR(40) NOT NULL, 
                     b_publishedyear DECIMAL(4,0) NOT NULL,
-                    b_title VARCHAR(50) NOT NULL)"""
+                    b_title VARCHAR(50) NOT NULL
+                )"""
+        _conn.execute(sql)
+
+        sql = """CREATE TABLE Books (
+                    b_bookid DECIMAL(13, 0), 
+                    b_isbn VARCHAR(13) PRIMARY KEY, 
+                    b_authorid INTEGER NOT NULL,
+                    b_publishedyear DECIMAL(4,0) NOT NULL,
+                    b_title VARCHAR(50) NOT NULL 
+                )"""
         _conn.execute(sql)
 
         sql = """CREATE TABLE RawBookTags (
@@ -93,7 +109,7 @@ def createTables(_conn):
         _conn.execute(sql)
 
         sql = """CREATE TABLE BookTags (
-                    bt_goodreadsid DECIMAL(13, 0), 
+                    bt_bookid DECIMAL(13, 0), 
                     bt_tagid DECIMAL(10, 0))"""
         _conn.execute(sql)
 
@@ -123,7 +139,8 @@ def createTables(_conn):
                     u_userid INTEGER PRIMARY KEY AUTOINCREMENT,
                     u_name TEXT NOT NULL,
                     u_email TEXT NOT NULL,
-                    u_password TEXT NOT NULL)"""
+                    u_password TEXT NOT NULL,
+                    u_universityid TEXT NOT NULL)"""
         _conn.execute(sql)
 
         sql = """CREATE TABLE Librarian (
@@ -146,8 +163,13 @@ def createTables(_conn):
         sql = """CREATE TABLE ReservedBooks (
                     r_isbn VARCHAR(13),
                     r_foruserid INTEGER,
-                    r_currentuserid INTEGER,
+                    r_reservatindate DATE,
                     r_reason TEXT)"""
+        _conn.execute(sql)
+
+        sql = """CREATE TABLE Author (
+                    a_authorid INTEGER PRIMARY KEY AUTOINCREMENT,
+                    a_authorname VARCHAR(40) NOT NULL)"""
         _conn.execute(sql)
 
         _conn.commit()
@@ -161,6 +183,9 @@ def dropTables(_conn):
 
     try:
         sql = "DROP TABLE IF EXISTS Books"
+        _conn.execute(sql)
+
+        sql = "DROP TABLE IF EXISTS RawBooks"
         _conn.execute(sql)
 
         sql = "DROP TABLE IF EXISTS RawBookTags"
@@ -194,6 +219,9 @@ def dropTables(_conn):
         _conn.execute(sql)
 
         sql = "DROP TABLE IF EXISTS ReservedBooks"
+        _conn.execute(sql)
+
+        sql = "DROP TABLE IF EXISTS Author"
         _conn.execute(sql)
 
 
@@ -256,7 +284,7 @@ def cleanBooksTable(_conn):
     try: 
         sql = """
                 delete 
-                from Books
+                from RawBooks
                 where not length(b_title) > 0 or 
                     not b_title glob '*[A-Za-z]*' or 
                     not length(cast(b_publishedyear as text)) > 0 or
@@ -391,7 +419,7 @@ def populateBookTagsTable(_conn):
             where rowid not in (
                 select min(rowid)
                 from BookTags 
-                group by bt_tagid, bt_goodreadsid
+                group by bt_tagid, bt_bookid
             )
         """
 
@@ -422,6 +450,9 @@ def dropExtraTables(_conn):
         _conn.execute(sql)
 
         sql = "DROP TABLE IF EXISTS RawTags"
+        _conn.execute(sql)
+
+        sql = "DROP TABLE IF EXISTS RawBooks"
         _conn.execute(sql)
 
         _conn.commit()
@@ -458,7 +489,7 @@ def populateStockRooms(_conn):
     try:
         sql = """
             select b_isbn
-            from Books
+            from RawBooks
             where substr(b_authornames, 1, 1) >= ? and
                 substr(b_authornames, 1, 1) <= ?
         """
@@ -484,6 +515,157 @@ def populateStockRooms(_conn):
         _conn.rollback()
         print(e)
 
+def populateAuthorTable(_conn):
+
+    try:
+        sql = """
+            insert into Author (a_authorname)
+            select distinct b_authornames
+            from RawBooks
+        """
+
+        _conn.execute(sql)
+
+        _conn.commit()
+    except Error as e: 
+        _conn.rollback()
+        print(e)
+
+def populateBooksTable(_conn):
+
+    try:
+
+        sql = """
+            alter table RawBooks
+            add column b_authorid INTEGER
+        """
+
+        _conn.execute(sql)
+
+        sql = """
+            update RawBooks 
+            set b_authorid = 
+            (select a_authorid from Author where b_authornames = a_authorname)
+        """
+
+        _conn.execute(sql)
+
+        sql = """
+            insert into Books
+            select R.b_goodreadsid, R.b_isbn, R.b_authorid, R.b_publishedyear, R.b_title
+            from RawBooks R
+        """
+
+        _conn.execute(sql)
+
+        _conn.commit()
+    except Error as e: 
+        _conn.rollback()
+        print(e)
+
+
+def getUserIDFromEmail(_conn, u_email):
+
+    try:
+        sql = "SELECT u_userid FROM User WHERE u_email = ?"
+
+        cur = _conn.cursor()
+
+        cur.execute(sql, [u_email])
+
+        user_id = cur.fetchone()
+
+        return user_id[0]
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+def insertLibraryUsers(_conn, user_emails):
+    """
+    Reference: https://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits
+    Use: For random majors for sample data
+    """
+
+    try:
+        libraryUsers = []
+
+        for user_email in user_emails:
+            randomMajor = ''.join(random.choice(string.printable) for _ in range(10))
+            user_id = getUserIDFromEmail(_conn, user_email)
+            
+            newEntry = [user_id, randomMajor]
+
+            libraryUsers.append(newEntry)
+
+        sql = "INSERT INTO LibraryUser VALUES(?, ?)"
+
+        _conn.executemany(sql, libraryUsers)
+        _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
+def insertLibrarians(_conn, user_emails):
+
+    try:
+        librarians = []
+
+        for user_email in user_emails:
+            randomSalary = random.randrange(30000, 80000, 2500)
+            user_id = getUserIDFromEmail(_conn, user_email)
+            
+            newEntry = [user_id, randomSalary]
+
+            librarians.append(newEntry)
+
+        sql = "INSERT INTO Librarian VALUES(?, ?)"
+
+        _conn.executemany(sql, librarians)
+        _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
+def populateSampleUsers(_conn):
+
+    raw_users = getLinesFromFile(users_file)
+
+    sampleUsers = []
+    sampleLibraryUsers = []
+    sampleLibrarians = []
+
+    for i, user in enumerate(raw_users):
+        raw_user = user.split()
+        
+        newEntryUser = (raw_user[0], raw_user[1], generate_password_hash(raw_user[2]), raw_user[3])
+    
+        sampleUsers.append(newEntryUser)
+
+        if i >= len(raw_users) - 5:
+            sampleLibrarians.append(raw_user[1])
+            continue
+        
+        sampleLibraryUsers.append(raw_user[1])
+
+
+    try:
+        sql = """INSERT INTO User(u_name, u_email, u_password, u_universityid) VALUES(?, ?, ?, ?)"""
+        _conn.executemany(sql, sampleUsers)
+
+        _conn.commit()
+
+        insertLibrarians(_conn, sampleLibrarians)
+        insertLibraryUsers(_conn, sampleLibraryUsers)
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
 def populateTables(_conn):
 
     try: 
@@ -499,16 +681,197 @@ def populateTables(_conn):
         # Populate new table from raw data
         populateBookTagsTable(_conn)
 
-        # Drop original tables
-        dropExtraTables(_conn)
+        # Separate author from large table
+        populateAuthorTable(_conn)
+
+        # Clean and insert book data
+        populateBooksTable(_conn)
 
         # Populate stock rooms using available data
         populateStockRooms(_conn)
 
+        # Insert sample users
+        populateSampleUsers(_conn)
+
+        # Drop original tables
+        dropExtraTables(_conn)
+
     except Error as e: 
         print(e)
 
-def initalizeDatabase():
+
+def getLinesFromFile(_file):
+    """ Returns the contents of a file as a list."""
+
+    with open(_file, "r") as f:
+        raw_input = f.readlines()
+
+    input = []
+    for raw_line in raw_input:
+        line = raw_line.rstrip()
+        if line:
+            input.append(line.rstrip())
+    
+    return input
+
+
+def insertCheckedEntry(_conn, entry):
+
+    try:
+        sql = "INSERT INTO CheckedBooks VALUES(?, ?, ?, ?)"
+
+        _conn.execute(sql, entry)
+        _conn.commit()
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+def insertReservedEntry(_conn, entry):
+
+    try:
+        sql = "INSERT INTO ReservedBooks VALUES(?, ?, ?, ?)"
+
+        _conn.execute(sql, entry)
+        _conn.commit()
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+def checkoutSampleBooks(_conn):
+
+    try: 
+        sqlGetBook = """
+            select b_isbn, s_bookcount
+            from Books, StockRoom, University
+            where b_isbn = s_isbn and 
+                s_universityid = un_id and 
+                un_id = ? and 
+                b_isbn = ?
+        """
+
+        sqlUpdateStockRoomCount = """
+            update StockRoom
+            set s_bookcount = (
+                select s_bookcount - 1
+                from StockRoom, Books, University
+                where b_isbn = s_isbn and 
+                    s_universityid = un_id and 
+                    s_universityid = ? and 
+                    s_isbn = ?)
+            where s_isbn = ? and 
+                s_universityid = ?
+        """
+
+        cur = _conn.cursor()
+
+        simulatedInput = getLinesFromFile(checked_file)
+
+
+        for line in simulatedInput:
+            words = line.split()
+            
+            un_id = int(words[0])
+            user_id = int(words[1])
+            isbn = words[2]
+
+            args = [un_id, isbn]
+
+            cur.execute(sqlGetBook, args)
+            bookEntry = cur.fetchall()
+
+            if bookEntry:
+                count = bookEntry[0][1]
+
+                if count >= 1:
+
+                    checkedDate = datetime.datetime.today()
+                    #tempDate
+                    expirationDate = checkedDate + datetime.timedelta(days=30)
+
+                    checkedDate = checkedDate.strftime('%Y-%m-%d')
+                    expirationDate = expirationDate.strftime('%Y-%m-%d')
+                    newEntry = [
+                        isbn,
+                        user_id,
+                        checkedDate,
+                        expirationDate
+                    ]
+                    insertCheckedEntry(_conn, newEntry)
+
+            args = [un_id, isbn, un_id, isbn]
+            _conn.execute(sqlUpdateStockRoomCount, args)
+
+            _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
+def reserveSampleBooks(_conn):
+    
+    reason_location = "NOT IN SCHOOL"
+    reason_copies = "NO MORE COPIES"
+
+    try: 
+        sqlGetBook = """
+            select b_isbn, s_bookcount
+            from Books, StockRoom, University
+            where b_isbn = s_isbn and 
+                s_universityid = un_id and 
+                un_id = ? and 
+                b_isbn = ?
+        """
+
+        cur = _conn.cursor()
+
+        simulatedInput = getLinesFromFile(reserved_file)
+
+
+        for line in simulatedInput:
+            words = line.split()
+            
+            un_id = int(words[0])
+            user_id = int(words[1])
+            isbn = words[2]
+
+            args = [un_id, isbn]
+
+            cur.execute(sqlGetBook, args)
+            bookEntry = cur.fetchall()
+
+            reservedDate = datetime.datetime.today().strftime('%Y-%m-%d')
+
+            newEntry = []
+
+            if len(bookEntry) != 0:
+                count = bookEntry[0][1]
+
+                if count == 0:
+
+                    newEntry = [
+                        isbn,
+                        user_id,
+                        reservedDate,
+                        reason_copies
+                    ]
+            else:
+                newEntry = [
+                        isbn,
+                        user_id,
+                        reservedDate,
+                        reason_location
+                    ]    
+                
+            insertReservedEntry(_conn, newEntry)
+            _conn.commit()
+
+    except Error as e:
+        _conn.rollback()
+        print(e)
+
+
+def initializeDatabase():
     database = r"./instance/data.sqlite"
 
     # print(os.getcwd())
@@ -521,4 +884,9 @@ def initalizeDatabase():
         populateTables(conn)
 
 
+        checkoutSampleBooks(conn)
+        reserveSampleBooks(conn)
+
+
     closeConnection(conn, database)
+
