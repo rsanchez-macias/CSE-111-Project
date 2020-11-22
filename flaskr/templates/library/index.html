@@ -1,23 +1,63 @@
 {% extends 'base.html' %}
 
+{% block content %}
+    <!-- LIBRARIAN -->
+    {% if user == 'librarian' %}
+        <h3>Welcome Librarian {{ g.user['u_name'] }}!</h3>
+    {% endif %}
+    
+    <!-- STUDENT -->
+    {% if user == 'student' %}
+        <h3>Welcome Student {{ g.user['u_name'] }}!</h3>
+    {% endif %}
+
+    <h3>Books availible at {{university["un_name"]}}</h3>
+
+    <form method="post">
+
+        <select name="filter" id="filter">
+            <option value=""></option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="year">Year</option>
+            <option value="isbn">ISBN</option>
+        </select>
+        <input name="search" id="search" required>
+
+        <input type="submit" value="Search">
+    
+    </form>
+
+    <table border="1px black">
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Year</th>
+            <th>ISBN</th>
+        </tr>
+    {% for book in books %}
+           
+        {% if not loop.last %}
+        <tr>
+            <td>{{ book['b_title']}}</td>
+            <td>{{ book['a_authorname']}}</td>
+            <td>{{ book['b_publishedyear']}}</td>
+            <td>{{ book['b_isbn']}}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+
+    </table>
+
+
+{% endblock %}
 
 
 
 
 
-<!-- Example of what can potentially be done for users. Printing all books associated with them -->
 
-<!-- {% block content %}
-{% for book in books %}
-<article class="books">
-    <header>
-        <div>
-            {{book['title']}} {{book['author']}}
-        </div>
-    </header>
-</article>
-{% if not loop.last %}
-<hr>
-{% endif %}
-{% endfor %}
-{% endblock %} -->
+
+
+
+
