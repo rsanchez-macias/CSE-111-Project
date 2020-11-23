@@ -3,51 +3,98 @@
 {% block content %}
     <!-- LIBRARIAN -->
     {% if user == 'librarian' %}
-        <h3>Welcome Librarian {{ g.user['u_name'] }}!</h3>
+        <h3>
+            Welcome librarian {{ g.user['u_name'] }}!
+        </h3>
+
+        <h3>
+            <form method="post">
+                Click here to view all library users 
+                <input name="button" type="submit" value="search users">
+            </form>
+        </h3>
+
+    {% if libraryUsers %}
+        <h3>Registered Users at {{university["un_name"]}} </h3>
+        
+        <form method="post">
+            <select name="filter" id="filter">
+                <option value=""></option>
+                <option value="name">Name</option>
+                <option value="email">Email</option>
+            </select>
+            <input name="input" id="input">
+            <input name="button" type="submit" value="filter users">
+            <input name="button" type="submit" value="refresh users">
+        </form>
+        
+        <table border="1px black">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+            {% for libraryUser in libraryUsers %}
+            {% if not loop.last %}
+            <tr>
+                <td>{{ libraryUser['u_name']}}</td>
+                <td>{{ libraryUser['u_email']}}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        
+        </table>
+
+    {% endif %}
+
     {% endif %}
     
     <!-- STUDENT -->
     {% if user == 'student' %}
-        <h3>Welcome Student {{ g.user['u_name'] }}!</h3>
+        <h3>
+            Welcome student {{ g.user['u_name'] }}!
+        </h3>
     {% endif %}
 
-    <h3>Books availible at {{university["un_name"]}}</h3>
 
-    <form method="post">
+    {% if books %}
 
-        <select name="filter" id="filter">
-            <option value=""></option>
-            <option value="title">Title</option>
-            <option value="author">Author</option>
-            <option value="year">Year</option>
-            <option value="isbn">ISBN</option>
-        </select>
-        <input name="search" id="search" required>
+        <h3>Books availible at {{university["un_name"]}}</h3>
 
-        <input type="submit" value="Search">
-    
-    </form>
+        <form method="post">
+            <select name="filter" id="filter">
+                <option value=""></option>
+                <option value="title">Title</option>
+                <option value="author">Author</option>
+                <option value="year">Year</option>
+                <option value="isbn">ISBN</option>
+            </select>
+            <input name="input" id="input">
 
-    <table border="1px black">
-        <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Year</th>
-            <th>ISBN</th>
-        </tr>
-    {% for book in books %}
-           
-        {% if not loop.last %}
-        <tr>
-            <td>{{ book['b_title']}}</td>
-            <td>{{ book['a_authorname']}}</td>
-            <td>{{ book['b_publishedyear']}}</td>
-            <td>{{ book['b_isbn']}}</td>
-        </tr>
-        {% endif %}
-    {% endfor %}
+            <input name="button" type="submit" value="filter books">
+            <input name="button" type="submit" value="refresh books">
+        </form>
 
-    </table>
+        <table border="1px black">
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Year</th>
+                <th>ISBN</th>
+            </tr>
+        {% for book in books %}
+            {% if not loop.last %}
+            <tr>
+                <td>{{ book['b_title']}}</td>
+                <td>{{ book['a_authorname']}}</td>
+                <td>{{ book['b_publishedyear']}}</td>
+                <td>{{ book['b_isbn']}}</td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+
+        </table>
+
+    {% endif %}
 
 
 {% endblock %}
