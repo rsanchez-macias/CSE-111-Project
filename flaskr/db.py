@@ -94,7 +94,7 @@ def createTables(_conn):
         _conn.execute(sql)
 
         sql = """CREATE TABLE Books (
-                    b_goodreadsid DECIMAL(13, 0), 
+                    b_bookid DECIMAL(13, 0), 
                     b_isbn VARCHAR(13) PRIMARY KEY, 
                     b_authorid INTEGER NOT NULL,
                     b_publishedyear DECIMAL(4,0) NOT NULL,
@@ -109,7 +109,7 @@ def createTables(_conn):
         _conn.execute(sql)
 
         sql = """CREATE TABLE BookTags (
-                    bt_goodreadsid DECIMAL(13, 0), 
+                    bt_bookid DECIMAL(13, 0), 
                     bt_tagid DECIMAL(10, 0))"""
         _conn.execute(sql)
 
@@ -419,7 +419,7 @@ def populateBookTagsTable(_conn):
             where rowid not in (
                 select min(rowid)
                 from BookTags 
-                group by bt_tagid, bt_goodreadsid
+                group by bt_tagid, bt_bookid
             )
         """
 
@@ -646,9 +646,9 @@ def populateSampleUsers(_conn):
     
         sampleUsers.append(newEntryUser)
 
-        if i == len(raw_users) - 1:
+        if i >= len(raw_users) - 5:
             sampleLibrarians.append(raw_user[1])
-            break
+            continue
         
         sampleLibraryUsers.append(raw_user[1])
 
