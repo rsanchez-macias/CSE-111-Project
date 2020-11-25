@@ -6,15 +6,27 @@
         <h3>
             Welcome librarian {{ g.user['u_name'] }}!
         </h3>
+        
+        {% if not libraryUsers %}
 
         <h3>
             <form method="post">
-                Click here to view all library users 
-                <input name="button" type="submit" value="search users">
+                View Users
+                <button name="button" type="submit" value="search users">Users</button>
             </form>
         </h3>
 
+        {% endif %}
+
     {% if libraryUsers %}
+
+        <h3>
+            <form method="post">
+                Return to Books  
+                <button name="button" type="submit" value="return to books">Books</button>
+            </form>
+        </h3> 
+
         <h3>Registered Users at {{university["un_name"]}} </h3>
         
         <form method="post">
@@ -24,8 +36,10 @@
                 <option value="email">Email</option>
             </select>
             <input name="input" id="input">
-            <input name="button" type="submit" value="filter users">
-            <input name="button" type="submit" value="refresh users">
+
+            <button name="button" type="submit" value="filter users">Filter</button>
+            <button name="button" type="submit" value="refresh books">Refresh</button>
+
         </form>
         
         <table border="1px black">
@@ -58,7 +72,7 @@
 
     {% if books %}
 
-        <h3>Books availible at {{university["un_name"]}}</h3>
+        <h3>{{university["un_name"]}} Books</h3>
 
         <form method="post">
             <select name="filter" id="filter">
@@ -70,9 +84,36 @@
             </select>
             <input name="input" id="input">
 
-            <input name="button" type="submit" value="filter books">
-            <input name="button" type="submit" value="refresh books">
+            <button name="button" type="submit" value="filter books">Filter</button>
+            <button name="button" type="submit" value="refresh books">Refresh</button>
         </form>
+
+        {% if user == 'librarian' %}
+            <h3>To insert a new book complete the following information:</h3>
+
+            <form method="post">
+                <label for="title">Title </label>
+                <input type="text" id="title" name="title">
+
+                <label for="author">Author </label>
+                <input type="text" id="author" name="author">
+
+                <label for="year">Year </label>
+                <input type="text" id="year" name="year">
+
+                <label for="isbn">ISBN </label>
+                <input type="text" id="isbn" name="isbn">
+
+                <label for="copies">Number of Copies</label>
+                <input type="text" id="copies" name="copies">
+
+                <button name="button" type="submit" value="insert books">Insert</button>
+
+            </form>
+
+        {% endif%}
+
+        <br>
 
         <table border="1px black">
             <tr>
