@@ -24,6 +24,7 @@ def getAllBooks():
     return db.execute(
     'SELECT * FROM Books, Author, Stockroom, University WHERE s_universityid = un_id AND b_isbn = s_isbn AND b_authorid = a_authorid AND s_universityid = ?',(g.user["u_universityid"],)
     ).fetchall()
+    
 def getFilteredBooks(filter, input):
     db = get_db()
     input = "%" + input + "%"
@@ -40,9 +41,11 @@ def getFilteredBooks(filter, input):
 
     return db.execute(query,([g.user["u_universityid"], input])).fetchall()
 
+
 def getLibraryUsers():
     db = get_db()
     return db.execute('SELECT * FROM User, University WHERE u_universityid = un_id AND un_id = ?',(g.user["u_universityid"],)).fetchall()
+
 def getFilteredUsers(filter, input):
     db = get_db()
     input = "%" + input + "%"
