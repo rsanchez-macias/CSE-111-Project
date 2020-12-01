@@ -4,17 +4,21 @@
     <!-- LIBRARIAN -->
     {% if user == 'librarian' %}
         <h3>
-            Welcome librarian {{ g.user['u_name'] }}!
+            WELCOME LIBRARIAN {{ g.user['u_name'] }}!
         </h3>
+
+        <hr>
         
         {% if not libraryUsers %}
 
         <h3>
             <form method="post">
-                View Users
+                Library Users
                 <button name="button" type="submit" value="search users">Users</button>
             </form>
         </h3>
+
+        <hr>
 
         {% endif %}
 
@@ -65,7 +69,7 @@
     <!-- STUDENT -->
     {% if user == 'student' %}
         <h3>
-            Welcome student {{ g.user['u_name'] }}!
+            WELCOME STUDENT {{ g.user['u_name'] }}!
         </h3>
     {% endif %}
 
@@ -73,6 +77,10 @@
     {% if books %}
 
         <h3>{{university["un_name"]}} Books</h3>
+
+        <hr>
+
+        <h3>Filter Book</h3>
 
         <form method="post">
             <select name="filter" id="filter">
@@ -88,28 +96,38 @@
             <button name="button" type="submit" value="refresh books">Refresh</button>
         </form>
 
+        <hr>
+
         {% if user == 'librarian' %}
-            <h3>To insert a new book complete the following information:</h3>
+            <h3>Insert New Book</h3>
 
             <form method="post">
-                <label for="title">Title </label>
-                <input type="text" id="title" name="title">
-
-                <label for="author">Author </label>
-                <input type="text" id="author" name="author">
-
-                <label for="year">Year </label>
-                <input type="text" id="year" name="year">
-
-                <label for="isbn">ISBN </label>
-                <input type="text" id="isbn" name="isbn">
-
-                <label for="copies">Number of Copies</label>
-                <input type="text" id="copies" name="copies">
-
+                <input type="text" id="title" name="title" placeholder="Title">
+                <input type="text" id="author" name="author" placeholder="Author">
+                <input type="text" id="year" name="year" placeholder="Year">
+                <input type="text" id="isbn" name="isbn" placeholder="ISBN">
+                <input type="text" id="copies" name="copies" placeholder="# of Copies">
                 <button name="button" type="submit" value="insert books">Insert</button>
-
             </form>
+
+            <hr>
+
+            <h3>Update Book</h3>
+            
+            <form method="post">
+                <input type="input" id="isbn" name="isbn" placeholder="ISBN of Book">
+                <select name="filter" id="filter">
+                    <option value=""></option>
+                    <option value="title">Title</option>
+                    <option value="year">Year</option>
+                    <option value="isbnNEW">ISBN</option>
+                </select>
+                <input name="input" id="input">            
+                <button name="button" type="submit" value="update book">Update</button>
+            
+            </form>
+
+            <hr>
 
         {% endif%}
 
