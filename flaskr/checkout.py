@@ -14,6 +14,10 @@ book_author = ""
 book_year = ""
 book_title = ""
 
+@bp.route('/checked/', methods=('GET', 'POST'))
+def checked():
+    return render_template('users/checkout.html')
+
 
 @bp.route('/clearfields/', methods=('GET', 'POST'))
 def clear():
