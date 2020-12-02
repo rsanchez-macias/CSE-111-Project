@@ -23,4 +23,10 @@ def create_app(test_config=None):
     app.register_blueprint(library.bp)
     app.add_url_rule('/', endpoint='index')
 
+
+    from . import checkout
+    app.register_blueprint(checkout.bp)
+    app.add_url_rule('/book', endpoint='book')
+    app.add_url_rule('/book/description', endpoint='book.description')
+
     return app
