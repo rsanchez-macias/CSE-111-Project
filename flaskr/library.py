@@ -5,6 +5,7 @@ from werkzeug.exceptions import abort
 
 from flaskr.auth import login_required
 from flaskr.db import get_db
+from random import randint
 
 bp = Blueprint('library', __name__)
 
@@ -65,6 +66,47 @@ def getFilteredUsers(filter, input):
     query = "SELECT * FROM User, University WHERE u_universityid = un_id AND un_id = ? AND " + temp
 
     return db.execute(query,([g.user["u_universityid"], input])).fetchall()
+def insertBooks(title, author, year, isbn, copies):
+    db = get_db()
+
+    cur = db.cursor()
+    checkAuthor = cur.execute('SELECT a_authorid FROM Author WHERE a_authorname = ?', (author,)).fetchone()
+
+    bookId = randint(0,100000)
+    while cur.execute('SELECT * FROM Books WHERE b_bookid = ?', (bookId,)).fetchone() is not None:
+        bookId = randint(0,100000)
+    
+    authorId = randint(0,100000)
+    while cur.execute('SELECT * FROM Author WHERE a_authorid = ?', (authorId,)).fetchone() is not None:
+        authorId = randint(0,100000)
+
+    if checkAuthor is not None:
+        db.execute('INSERT INTO Books VALUES (?, ?, ?, ?, ?)',(bookId,isbn,checkAuthor["a_authorid"],year,title))
+    else:
+        db.execute('INSERT INTO Author VALUES (?, ?)', (authorId,author))
+        db.execute('INSERT INTO Books VALUES (?, ?, ?, ?, ?)',(bookId,isbn,authorId,year,title))
+        
+    db.execute('INSERT INTO StockRoom VALUES (?,?,?)',(g.user["u_universityid"], isbn, copies))   
+
+    db.commit()
+
+def updateBook(isbn, filter, input):
+    db = get_db()
+
+    if filter == "title":
+        temp = 'b_title = ?'
+    elif filter == 'year':
+        temp = 'b_publishedyear = ?'
+    else:
+        temp = "b_isbn = ?"
+
+    query = "UPDATE Books SET " + temp + " WHERE b_isbn = ?"
+
+    db.execute(query,([input, isbn]))
+
+    db.commit()
+
+
 
 @bp.route('/', methods=('GET', 'POST'))
 def index():
@@ -73,11 +115,18 @@ def index():
 
     if request.method == 'POST':
         button = request.form["button"]
-        if button == "refresh books":
+        if button == "refresh books" or button == "return to books":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
         if button == "filter books":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getFilteredBooks(request.form["filter"],request.form['input']))
+        if button == "insert books":
+            insertBooks(request.form['title'],request.form['author'],request.form['year'],request.form['isbn'],request.form['copies'])
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
+        if button == "update book":
+            updateBook(request.form['isbn'], request.form['filter'], request.form['input'])
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
         if button == "refresh users" or button == "search users":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getLibraryUsers())
         if button == "filter users":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getFilteredUsers(request.form["filter"],request.form['input']))
+            

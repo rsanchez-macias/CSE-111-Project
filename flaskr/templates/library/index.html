@@ -4,17 +4,33 @@
 <!-- LIBRARIAN -->
 {% if user == 'librarian' %}
 <h3>
-    Welcome librarian {{ g.user['u_name'] }}!
+    WELCOME LIBRARIAN {{ g.user['u_name'] }}!
 </h3>
+
+<hr>
+
+{% if not libraryUsers %}
 
 <h3>
     <form method="post">
-        Click here to view all library users
-        <input name="button" type="submit" value="search users">
+        Library Users
+        <button name="button" type="submit" value="search users">Users</button>
     </form>
 </h3>
 
+<hr>
+
+{% endif %}
+
 {% if libraryUsers %}
+
+<h3>
+    <form method="post">
+        Return to Books
+        <button name="button" type="submit" value="return to books">Books</button>
+    </form>
+</h3>
+
 <h3>Registered Users at {{university["un_name"]}} </h3>
 
 <form method="post">
@@ -24,8 +40,10 @@
         <option value="email">Email</option>
     </select>
     <input name="input" id="input">
-    <input name="button" type="submit" value="filter users">
-    <input name="button" type="submit" value="refresh users">
+
+    <button name="button" type="submit" value="filter users">Filter</button>
+    <button name="button" type="submit" value="refresh books">Refresh</button>
+
 </form>
 
 <table border="1px black">
@@ -51,12 +69,15 @@
 <!-- STUDENT -->
 {% if user == 'student' %}
 <h3>
-    Welcome student {{ g.user['u_name'] }}!
+    WELCOME STUDENT {{ g.user['u_name'] }}!
 </h3>
 {% endif %}
 
+<h3>{{university["un_name"]}} Books</h3>
 
-<h3>Books availible at {{university["un_name"]}}</h3>
+<hr>
+
+<h3>Filter Book</h3>
 
 <form method="post">
     <select name="filter" id="filter">
@@ -68,11 +89,48 @@
     </select>
     <input name="input" id="input">
 
-    <input name="button" type="submit" value="filter books">
-    <input name="button" type="submit" value="refresh books">
+    <button name="button" type="submit" value="filter books">Filter</button>
+    <button name="button" type="submit" value="refresh books">Refresh</button>
 </form>
 
+<hr>
+
 {% if books %}
+
+{% if user == 'librarian' %}
+<h3>Insert New Book</h3>
+
+<form method="post">
+    <input type="text" id="title" name="title" placeholder="Title">
+    <input type="text" id="author" name="author" placeholder="Author">
+    <input type="text" id="year" name="year" placeholder="Year">
+    <input type="text" id="isbn" name="isbn" placeholder="ISBN">
+    <input type="text" id="copies" name="copies" placeholder="# of Copies">
+    <button name="button" type="submit" value="insert books">Insert</button>
+</form>
+
+<hr>
+
+<h3>Update Book</h3>
+
+<form method="post">
+    <input type="input" id="isbn" name="isbn" placeholder="ISBN of Book">
+    <select name="filter" id="filter">
+        <option value=""></option>
+        <option value="title">Title</option>
+        <option value="year">Year</option>
+        <option value="isbnNEW">ISBN</option>
+    </select>
+    <input name="input" id="input">
+    <button name="button" type="submit" value="update book">Update</button>
+
+</form>
+
+<hr>
+
+{% endif%}
+
+<br>
 
 <table border="1px black">
     <tr>
@@ -83,7 +141,7 @@
         <th>ISBN</th>
     </tr>
     {% for book in books %}
-    
+
     <tr class="clickable-row">
         <td>
             <img id="bookImage" src="{{ book['b_image_url']}}" onerror="this.onerror=null; this.src='Default.jpg'"
@@ -95,12 +153,15 @@
         <td>{{ book['b_publishedyear']}}</td>
         <td id="book-isbn">{{ book['b_isbn']}}</td>
     </tr>
-   
+
     {% endfor %}
 
+
 </table>
+
 {% endif %}
 
+{% if user == 'student' %}
 <script>
     $(function () {
         $('.clickable-row').click(function () {
@@ -110,19 +171,20 @@
             var year = $(this).find("td").eq(3).text();
 
             $.getJSON('/book/process',
-            {
-                isbn: isbn,
-                title: title,
-                author: author,
-                year: year
-            },
-            function(data) {
-                // do nothing
-            });
+                {
+                    isbn: isbn,
+                    title: title,
+                    author: author,
+                    year: year
+                },
+                function (data) {
+                    // do nothing
+                });
 
             window.location.href = '/book/description/'
         });
     });
 </script>
+{% endif %}
 
 {% endblock %}
