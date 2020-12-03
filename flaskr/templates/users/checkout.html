@@ -5,12 +5,12 @@
 <div class="container">
     <h3>{{book_title}}</h3>
 
-    <img id="bookImage" src="" onerror="this.onerror=null; this.src='Default.jpg'" alt="" width="100"
+    <img id="bookImage" src="{{image_url}}" onerror="this.onerror=null; this.src='Default.jpg'" alt="" width="100"
         height="150">
 
-    <p>The book has been successfully checked out!</p>
+    <p>{{info_msg}}</p>
 
-    <form method="post">
+    <form action="{{url_for('checkout.redirect_user')}}" method="post">
         <input name="button" type="submit" value="Go back to book">
         <input name="button" type="submit" value="Go back to list">
     </form> 

@@ -7,6 +7,8 @@ from sqlite3 import Error
 from flaskr.auth import login_required
 from flaskr.db import get_db
 
+import datetime
+
 bp = Blueprint('checkout', __name__, url_prefix='/book/')
 
 book_isbn = ""
@@ -14,9 +16,119 @@ book_author = ""
 book_year = ""
 book_title = ""
 
+def removeOneBook(_book_isbn, _university_id):
+
+    db = get_db()
+
+    sql = """
+        UPDATE StockRoom
+        SET s_bookcount = (
+            SELECT s_bookcount - 1
+            FROM StockRoom, Books, University
+            WHERE b_isbn = s_isbn AND 
+                s_universityid = un_id AND 
+                s_universityid = ? AND 
+                s_isbn = ?)
+        WHERE s_isbn = ? AND 
+            s_universityid = ?
+    """
+
+    args = [_university_id, _book_isbn, _book_isbn, _university_id]
+
+    try:
+        db.execute(sql, args)
+        db.commit()
+    except Error as e:
+
+        db.rollback()
+        print(e)
+
+
+
+def bookCheckedBefore(_book_isbn, _user_id):
+
+    db = get_db()
+    sql = """
+        SELECT COUNT(*)
+        FROM CheckedBooks
+        WHERE cb_isbn = ? AND 
+            cb_userid = ?
+    """
+
+    args = [_book_isbn, _user_id]
+    count = 0
+
+    try:
+        cur = db.cursor()
+
+        count = cur.execute(sql, args).fetchone()
+        db.commit()
+    except Error as e:
+        db.rollback()
+        print(e)
+
+    return count[0]
+
+
+@bp.route('/redirect_checked/', methods=('GET', 'POST'))
+def redirect_user():
+    choice = request.form["button"]
+
+    if choice == "Go back to book":
+        return redirect(url_for('book.description'))
+    else:
+        return redirect(url_for('library.index'))
+
+
+def insertCheckedEntry(_entry):
+    db = get_db()
+    try:
+        sql = "INSERT INTO CheckedBooks VALUES(?, ?, ?, ?)"
+
+        db.execute(sql, _entry)
+        db.commit()
+    except Error as e:
+        db.rollback()
+        print(e)
+
+
+
 @bp.route('/checked/', methods=('GET', 'POST'))
 def checked():
-    return render_template('users/checkout.html')
+
+    success = "The book has been successfully checked out!"
+    failure = "Sorry, you already checkedout this book"
+
+    count = bookCheckedBefore(book_isbn, g.user['u_universityid'])
+    message = ""
+
+    print(count)
+
+    if count == 0:
+        removeOneBook(book_isbn, g.user['u_universityid'])
+        
+        checkedDate = datetime.datetime.today()
+        #tempDate
+        expirationDate = checkedDate + datetime.timedelta(days=30)
+
+        checkedDate = checkedDate.strftime('%Y-%m-%d')
+        expirationDate = expirationDate.strftime('%Y-%m-%d')
+        newEntry = [
+            book_isbn,
+            g.user['u_universityid'],
+            checkedDate,
+            expirationDate
+        ]
+
+        insertCheckedEntry(newEntry)
+
+        message = success
+    else:
+        message = failure
+    
+    image_url = getBookImage(book_isbn)
+
+    return render_template('users/checkout.html', image_url=image_url[0], info_msg=message)
 
 
 @bp.route('/clearfields/', methods=('GET', 'POST'))
@@ -84,7 +196,10 @@ def getAvailableBooks():
         db.rollback()
         print(e)
 
-    return count[0]
+    if count is None:
+        return 0
+    else: 
+        return count[0]
 
 
 @bp.route('/description/', methods=('GET', 'POST'))

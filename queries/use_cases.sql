@@ -253,6 +253,11 @@ SELECT cb_userid, COUNT(*) AS count
 FROM CheckedBooks
 GROUP BY cb_userid;
 
+SELECT COUNT(*)
+FROM CheckedBooks
+WHERE cb_isbn = "60929871" AND 
+    cb_userid = 2;
+
 
 -- RESERVE BOOKS
 
