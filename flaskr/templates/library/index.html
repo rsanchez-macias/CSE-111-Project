@@ -1,169 +1,190 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <!-- LIBRARIAN -->
-    {% if user == 'librarian' %}
-        <h3>
-            WELCOME LIBRARIAN {{ g.user['u_name'] }}!
-        </h3>
+<!-- LIBRARIAN -->
+{% if user == 'librarian' %}
+<h3>
+    WELCOME LIBRARIAN {{ g.user['u_name'] }}!
+</h3>
 
-        <hr>
-        
-        {% if not libraryUsers %}
+<hr>
 
-        <h3>
-            <form method="post">
-                Library Users
-                <button name="button" type="submit" value="search users">Users</button>
-            </form>
-        </h3>
+{% if not libraryUsers %}
 
-        <hr>
+<h3>
+    <form method="post">
+        Library Users
+        <button name="button" type="submit" value="search users">Users</button>
+    </form>
+</h3>
 
-        {% endif %}
+<hr>
 
-    {% if libraryUsers %}
+{% endif %}
 
-        <h3>
-            <form method="post">
-                Return to Books  
-                <button name="button" type="submit" value="return to books">Books</button>
-            </form>
-        </h3> 
+{% if libraryUsers %}
 
-        <h3>Registered Users at {{university["un_name"]}} </h3>
-        
-        <form method="post">
-            <select name="filter" id="filter">
-                <option value=""></option>
-                <option value="name">Name</option>
-                <option value="email">Email</option>
-            </select>
-            <input name="input" id="input">
+<h3>
+    <form method="post">
+        Return to Books
+        <button name="button" type="submit" value="return to books">Books</button>
+    </form>
+</h3>
 
-            <button name="button" type="submit" value="filter users">Filter</button>
-            <button name="button" type="submit" value="refresh books">Refresh</button>
+<h3>Registered Users at {{university["un_name"]}} </h3>
 
-        </form>
-        
-        <table border="1px black">
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-            </tr>
-            {% for libraryUser in libraryUsers %}
-            {% if not loop.last %}
-            <tr>
-                <td>{{ libraryUser['u_name']}}</td>
-                <td>{{ libraryUser['u_email']}}</td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-        
-        </table>
+<form method="post">
+    <select name="filter" id="filter">
+        <option value=""></option>
+        <option value="name">Name</option>
+        <option value="email">Email</option>
+    </select>
+    <input name="input" id="input">
 
+    <button name="button" type="submit" value="filter users">Filter</button>
+    <button name="button" type="submit" value="refresh books">Refresh</button>
+
+</form>
+
+<table border="1px black">
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+    </tr>
+    {% for libraryUser in libraryUsers %}
+    {% if not loop.last %}
+    <tr>
+        <td>{{ libraryUser['u_name']}}</td>
+        <td>{{ libraryUser['u_email']}}</td>
+    </tr>
     {% endif %}
+    {% endfor %}
 
-    {% endif %}
-    
-    <!-- STUDENT -->
-    {% if user == 'student' %}
-        <h3>
-            WELCOME STUDENT {{ g.user['u_name'] }}!
-        </h3>
-    {% endif %}
+</table>
+
+{% endif %}
+
+{% endif %}
+
+<!-- STUDENT -->
+{% if user == 'student' %}
+<h3>
+    WELCOME STUDENT {{ g.user['u_name'] }}!
+</h3>
+{% endif %}
+
+<h3>{{university["un_name"]}} Books</h3>
+
+<hr>
+
+<h3>Filter Book</h3>
+
+<form method="post">
+    <select name="filter" id="filter">
+        <option value=""></option>
+        <option value="title">Title</option>
+        <option value="author">Author</option>
+        <option value="year">Year</option>
+        <option value="isbn">ISBN</option>
+    </select>
+    <input name="input" id="input">
+
+    <button name="button" type="submit" value="filter books">Filter</button>
+    <button name="button" type="submit" value="refresh books">Refresh</button>
+</form>
+
+<hr>
+
+{% if books %}
+
+{% if user == 'librarian' %}
+<h3>Insert New Book</h3>
+
+<form method="post">
+    <input type="text" id="title" name="title" placeholder="Title">
+    <input type="text" id="author" name="author" placeholder="Author">
+    <input type="text" id="year" name="year" placeholder="Year">
+    <input type="text" id="isbn" name="isbn" placeholder="ISBN">
+    <input type="text" id="copies" name="copies" placeholder="# of Copies">
+    <button name="button" type="submit" value="insert books">Insert</button>
+</form>
+
+<hr>
+
+<h3>Update Book</h3>
+
+<form method="post">
+    <input type="input" id="isbn" name="isbn" placeholder="ISBN of Book">
+    <select name="filter" id="filter">
+        <option value=""></option>
+        <option value="title">Title</option>
+        <option value="year">Year</option>
+        <option value="isbnNEW">ISBN</option>
+    </select>
+    <input name="input" id="input">
+    <button name="button" type="submit" value="update book">Update</button>
+
+</form>
+
+<hr>
+
+{% endif%}
+
+<br>
+
+<table border="1px black">
+    <tr>
+        <th>Book</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Year</th>
+        <th>ISBN</th>
+    </tr>
+    {% for book in books %}
+
+    <tr class="clickable-row">
+        <td>
+            <img id="bookImage" src="{{ book['b_image_url']}}" onerror="this.onerror=null; this.src='Default.jpg'"
+                alt="" width="100" height="150">
+        </td>
+
+        <td>{{ book['b_title']}}</td>
+        <td>{{ book['a_authorname']}}</td>
+        <td>{{ book['b_publishedyear']}}</td>
+        <td id="book-isbn">{{ book['b_isbn']}}</td>
+    </tr>
+
+    {% endfor %}
 
 
-    {% if books %}
+</table>
 
-        <h3>{{university["un_name"]}} Books</h3>
+{% endif %}
 
-        <hr>
+{% if user == 'student' %}
+<script>
+    $(function () {
+        $('.clickable-row').click(function () {
+            var isbn = $(this).find("td").last().text();
+            var title = $(this).find("td").eq(1).text();
+            var author = $(this).find("td").eq(2).text();
+            var year = $(this).find("td").eq(3).text();
 
-        <h3>Filter Book</h3>
+            $.getJSON('/book/process',
+                {
+                    isbn: isbn,
+                    title: title,
+                    author: author,
+                    year: year
+                },
+                function (data) {
+                    // do nothing
+                });
 
-        <form method="post">
-            <select name="filter" id="filter">
-                <option value=""></option>
-                <option value="title">Title</option>
-                <option value="author">Author</option>
-                <option value="year">Year</option>
-                <option value="isbn">ISBN</option>
-            </select>
-            <input name="input" id="input">
-
-            <button name="button" type="submit" value="filter books">Filter</button>
-            <button name="button" type="submit" value="refresh books">Refresh</button>
-        </form>
-
-        <hr>
-
-        {% if user == 'librarian' %}
-            <h3>Insert New Book</h3>
-
-            <form method="post">
-                <input type="text" id="title" name="title" placeholder="Title">
-                <input type="text" id="author" name="author" placeholder="Author">
-                <input type="text" id="year" name="year" placeholder="Year">
-                <input type="text" id="isbn" name="isbn" placeholder="ISBN">
-                <input type="text" id="copies" name="copies" placeholder="# of Copies">
-                <button name="button" type="submit" value="insert books">Insert</button>
-            </form>
-
-            <hr>
-
-            <h3>Update Book</h3>
-            
-            <form method="post">
-                <input type="input" id="isbn" name="isbn" placeholder="ISBN of Book">
-                <select name="filter" id="filter">
-                    <option value=""></option>
-                    <option value="title">Title</option>
-                    <option value="year">Year</option>
-                    <option value="isbnNEW">ISBN</option>
-                </select>
-                <input name="input" id="input">            
-                <button name="button" type="submit" value="update book">Update</button>
-            
-            </form>
-
-            <hr>
-
-        {% endif%}
-
-        <br>
-
-        <table border="1px black">
-            <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Year</th>
-                <th>ISBN</th>
-            </tr>
-        {% for book in books %}
-            {% if not loop.last %}
-            <tr>
-                <td>{{ book['b_title']}}</td>
-                <td>{{ book['a_authorname']}}</td>
-                <td>{{ book['b_publishedyear']}}</td>
-                <td>{{ book['b_isbn']}}</td>
-            </tr>
-            {% endif %}
-        {% endfor %}
-
-        </table>
-
-    {% endif %}
-
+            window.location.href = '/book/description/'
+        });
+    });
+</script>
+{% endif %}
 
 {% endblock %}
-
-
-
-
-
-
-
-
-
-

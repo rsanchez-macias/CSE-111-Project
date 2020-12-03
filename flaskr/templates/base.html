@@ -1,26 +1,46 @@
 <!-- Html file which serves as an HTML template for the logout,register,and login routes -->
 
 <!doctype html>
-<title>{% block title %}{% endblock %} - Library</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<nav>
-    <h1>Library</h1>
-    <ul>
-        {% if g.user %}
-        <a href="{{ url_for('auth.logout') }}">Log Out</a>
-        {% else %}
-        <a href="{{ url_for('auth.register') }}">Register</a>
-        <br>
-        <a href="{{ url_for('auth.login') }}">Log In</a>
-        {% endif %}
-    </ul>
-</nav>
-<section class="content">
-    <header>
-        {% block header %}{% endblock %}
-    </header>
-    {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-    {% endfor %}
-    {% block content %}{% endblock %}
-</section>
+
+<head>
+    <title>{% block title %}{% endblock %} - Library</title>
+
+    <!-- Attempt to include bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type=text/javascript>
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    </script>
+
+</head>
+
+<body>
+    <nav>
+        <h1>Library</h1>
+        <ul>
+            {% if g.user %}
+            <a href="{{ url_for('auth.logout') }}">Log Out</a>
+            {% else %}
+            <a href="{{ url_for('auth.register') }}">Register</a>
+            <br>
+            <a href="{{ url_for('auth.login') }}">Log In</a>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <section class="content">
+        <header>
+            {% block header %}{% endblock %}
+        </header>
+        {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+    </section>
+</body>

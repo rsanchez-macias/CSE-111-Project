@@ -25,25 +25,36 @@ def getAllBooks():
     return db.execute(
     'SELECT * FROM Books, Author, Stockroom, University WHERE s_universityid = un_id AND b_isbn = s_isbn AND b_authorid = a_authorid AND s_universityid = ?',(g.user["u_universityid"],)
     ).fetchall()
+    
 def getFilteredBooks(filter, input):
+
+    trimmed_input = input.strip()
     db = get_db()
-    input = "%" + input + "%"
+    input = "%" + trimmed_input + "%"
     if filter == "title":
-        temp = 'b_title LIKE ?'
+        temp = 'b_title LIKE "%{}%"'.format(trimmed_input)
     elif filter == 'author':
-        temp = 'a_authorname LIKE ?'
+        temp = 'a_authorname LIKE "%{}%"'.format(trimmed_input)
     elif filter == 'year':
         temp = 'b_publishedyear LIKE ?'
     else:
-        temp = "b_isbn LIKE ?"
+        temp = "b_isbn = ?"
 
     query = "SELECT * FROM Books, Author, Stockroom, University WHERE s_universityid = un_id AND b_isbn = s_isbn AND b_authorid = a_authorid AND s_universityid = ? AND " + temp
 
-    return db.execute(query,([g.user["u_universityid"], input])).fetchall()
+    books = []
+    if filter == 'year' or filter == 'b_isbn':
+        books = db.execute(query,([g.user["u_universityid"], trimmed_input])).fetchall()
+    else:
+        books = db.execute(query,[g.user["u_universityid"]]).fetchall()
+    
+    return books
+
 
 def getLibraryUsers():
     db = get_db()
     return db.execute('SELECT * FROM User, University WHERE u_universityid = un_id AND un_id = ?',(g.user["u_universityid"],)).fetchall()
+
 def getFilteredUsers(filter, input):
     db = get_db()
     input = "%" + input + "%"

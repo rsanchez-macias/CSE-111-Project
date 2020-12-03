@@ -89,7 +89,9 @@ def createTables(_conn):
                     b_isbn VARCHAR(13) PRIMARY KEY, 
                     b_authornames VARCHAR(40) NOT NULL, 
                     b_publishedyear DECIMAL(4,0) NOT NULL,
-                    b_title VARCHAR(50) NOT NULL
+                    b_title VARCHAR(50) NOT NULL, 
+                    b_image_url TEXT,
+                    b_small_image_url TEXT
                 )"""
         _conn.execute(sql)
 
@@ -98,7 +100,9 @@ def createTables(_conn):
                     b_isbn VARCHAR(13) PRIMARY KEY, 
                     b_authorid INTEGER NOT NULL,
                     b_publishedyear DECIMAL(4,0) NOT NULL,
-                    b_title VARCHAR(50) NOT NULL 
+                    b_title VARCHAR(50) NOT NULL,
+                    b_image_url TEXT,
+                    b_small_image_url TEXT
                 )"""
         _conn.execute(sql)
 
@@ -552,7 +556,7 @@ def populateBooksTable(_conn):
 
         sql = """
             insert into Books
-            select R.b_goodreadsid, R.b_isbn, R.b_authorid, R.b_publishedyear, R.b_title
+            select R.b_goodreadsid, R.b_isbn, R.b_authorid, R.b_publishedyear, R.b_title, R.b_image_url, R.b_small_image_url
             from RawBooks R
         """
 
