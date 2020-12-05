@@ -18,29 +18,56 @@
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     </script>
 
+    <style>
+        #profile { 
+            width: 46px; 
+            height: 46px; 
+            padding: 10px 10px; 
+            margin: 0px 0px 0px 15px;
+            border-radius: 23px; 
+            font-size: 16px; 
+            text-align: center; 
+        } 
+
+    </style>
+
 </head>
 
 <body>
-    <nav>
-        <h1>Library</h1>
-        <ul>
-            {% if g.user %}
-            <a href="{{ url_for('auth.logout') }}">Log Out</a>
-            {% else %}
-            <a href="{{ url_for('auth.register') }}">Register</a>
-            <br>
-            <a href="{{ url_for('auth.login') }}">Log In</a>
-            {% endif %}
-        </ul>
+
+    <nav class="navbar navbar-expand-md navbar-light bg-light">
+        <a class="navbar-brand" href="#">Library</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                {% if g.user %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-info" id="profile" href="#">{{g.user['u_name'][0]}}</button>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
     </nav>
 
     <section class="content">
-        <header>
-            {% block header %}{% endblock %}
-        </header>
-        {% for message in get_flashed_messages() %}
-        <div class="flash">{{ message }}</div>
-        {% endfor %}
-        {% block content %}{% endblock %}
+        <div class="container">
+            <header>
+                {% block header %}{% endblock %}
+            </header>
+            {% for message in get_flashed_messages() %}
+            <div class="flash">{{ message }}</div>
+            {% endfor %}
+            {% block content %}{% endblock %}
+
+        </div>
     </section>
 </body>
