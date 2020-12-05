@@ -107,7 +107,6 @@ def updateBook(isbn, filter, input):
     db.commit()
 
 
-
 @bp.route('/', methods=('GET', 'POST'))
 def index():
     if request.method == 'GET':

@@ -29,6 +29,10 @@ def create_app(test_config=None):
     app.add_url_rule('/book', endpoint='book')
     app.add_url_rule('/book/description', endpoint='book.description')
 
+    from . import user_profile
+    app.register_blueprint(user_profile.bp)
+
+    
     print(app.url_map)
 
     return app

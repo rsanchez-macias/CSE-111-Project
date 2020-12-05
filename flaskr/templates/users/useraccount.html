@@ -2,7 +2,42 @@
 
 {% block content %}
 
-<h1>hello</h1>
-<h2>{{test}}</h2>
+<style>
+    #main {
+        margin: 50px 0px 0px 0px;
+    }
+</style>
+
+
+<div id="main" class="container">
+
+    <h1>Hello {{g.user['u_name']}}</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a data-toggle="tab" class="nav-link active" href="#account">Account Info</a>
+        </li>
+        <li class="nav-item">
+            <a data-toggle="tab" class="nav-link" href="#checked">Checked Books</a>
+        </li>
+        <li class="nav-item">
+            <a data-toggle="tab" class="nav-link" href="#reserved">Reserved Books</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="account" class="tab-pane fade in active">
+            <h3>Account</h3>
+        </div>
+        <div id="checked" class="tab-pane fade">
+            <h3>Checked</h3>
+        </div>
+        <div id="reserved" class="tab-pane fade">
+            <h3>Reserved</h3>
+        </div>
+    </div>
+
+</div>
+
 
 {% endblock %}
