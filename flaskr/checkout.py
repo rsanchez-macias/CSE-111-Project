@@ -99,7 +99,7 @@ def checked():
     success = "The book has been successfully checked out!"
     failure = "Sorry, you already checkedout this book"
 
-    count = bookCheckedBefore(book_isbn, g.user['u_universityid'])
+    count = bookCheckedBefore(book_isbn, g.user['u_userid'])
     message = ""
 
     print(count)
@@ -115,7 +115,7 @@ def checked():
         expirationDate = expirationDate.strftime('%Y-%m-%d')
         newEntry = [
             book_isbn,
-            g.user['u_universityid'],
+            g.user['u_userid'],
             checkedDate,
             expirationDate
         ]

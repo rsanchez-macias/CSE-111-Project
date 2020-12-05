@@ -258,6 +258,10 @@ FROM CheckedBooks
 WHERE cb_isbn = "60929871" AND 
     cb_userid = 2;
 
+SELECT *
+FROM CheckedBooks, Books
+WHERE cb_isbn = b_isbn AND 
+    cb_userid = 2;
 
 -- RESERVE BOOKS
 
