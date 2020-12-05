@@ -2,7 +2,97 @@
 
 {% block content %}
 
-<h1>hello</h1>
-<h2>{{test}}</h2>
+<style>
+    #main {
+        margin: 50px 0px 0px 0px;
+    }
+
+    #user_content {
+        margin: 20px 0px 0px 5px;
+    }
+
+    #acc_info {
+        color: green;
+        position: absolute;
+
+        left: 150px;
+    }
+
+    #empty_message {
+        margin-top: 20px;
+        margin-left: 10px;
+    }
+</style>
+
+
+<div id="main" class="container">
+
+    <h1>SUP {{g.user['u_name']}}</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a data-toggle="tab" class="nav-link active" href="#account">Account Info</a>
+        </li>
+        <li class="nav-item">
+            <a data-toggle="tab" class="nav-link" href="#checked">Checked Books</a>
+        </li>
+        <li class="nav-item">
+            <a data-toggle="tab" class="nav-link" href="#reserved">Reserved Books</a>
+        </li>
+    </ul>
+
+    <div id="user_content" class="tab-content">
+        <div id="account" class="tab-pane fade show active">
+            <h3>Account</h3>
+            <ul class="list-group">
+                <li class="list-group-item"><b>User: </b> <span id="acc_info">{{account_info[0]}} </span></li>
+                <li class="list-group-item"><b>Email: </b> <span id="acc_info">{{account_info[1]}} </span></li>
+                <li class="list-group-item"><b>University: </b> <span id="acc_info">{{account_info[2]}} </span></li>
+            </ul>
+        </div>
+        <div id="checked" class="tab-pane fade">
+            <h3>Checked Books</h3>
+
+            {% if checked_books %}
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Book</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Year</th>
+                        <th>ISBN</th>
+                    </tr>
+                </thead>
+                {% for book in checked_books %}
+
+                <tr class="clickable-row">
+                    <td>
+                        <img id="bookImage" src="{{ book['b_image_url']}}"
+                            onerror="this.onerror=null; this.src='Default.jpg'" alt="" width="100" height="150">
+                    </td>
+
+                    <td>{{ book['b_title']}}</td>
+                    <td>{{ book['a_authorname']}}</td>
+                    <td>{{ book['b_publishedyear']}}</td>
+                    <td id="book-isbn">{{ book['b_isbn']}}</td>
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+            {% else %}
+                <h5 id="empty_message">Such an emptiness . . .</h5>
+            {% endif %}
+
+        </div>
+        <div id="reserved" class="tab-pane fade">
+            <h3>Reserved</h3>
+        </div>
+    </div>
+
+</div>
+
 
 {% endblock %}

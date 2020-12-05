@@ -1,9 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+<style>
+    #welcome {
+        margin-top: 30px;
+    }
+</style>
+
 <!-- LIBRARIAN -->
 {% if user == 'librarian' %}
-<h3>
+<h3 id = "welcome">
     WELCOME LIBRARIAN {{ g.user['u_name'] }}!
 </h3>
 
@@ -68,7 +75,7 @@
 
 <!-- STUDENT -->
 {% if user == 'student' %}
-<h3>
+<h3 id = "welcome">
     WELCOME STUDENT {{ g.user['u_name'] }}!
 </h3>
 {% endif %}
@@ -81,7 +88,6 @@
 
 <form method="post">
     <select name="filter" id="filter">
-        <option value=""></option>
         <option value="title">Title</option>
         <option value="author">Author</option>
         <option value="year">Year</option>

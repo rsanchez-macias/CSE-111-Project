@@ -16,3 +16,10 @@ SELECT COUNT(*)
 FROM CheckedBooks
 WHERE cb_isbn = "60929871" AND 
     cb_userid = 1;
+
+
+SELECT *
+FROM CheckedBooks, Books, Author
+WHERE cb_isbn = b_isbn AND 
+    b_authorid = a_authorid AND
+    cb_userid = 2;
