@@ -106,6 +106,25 @@ def updateBook(isbn, filter, input):
 
     db.commit()
 
+def deleteBook(isbn):
+    db = get_db()
+    cur = db.cursor()
+    err = 'None'
+
+    if cur.execute('SELECT * FROM CheckedBooks WHERE cb_isbn = ?', (isbn,)).fetchone() is not None:
+            err = 'Book is currently checked out!'
+    if cur.execute('SELECT * FROM ReservedBooks WHERE r_isbn = ?', (isbn,)).fetchone() is not None:
+            err = 'Book is currently reserved!'
+    if cur.execute('SELECT * FROM Books WHERE b_isbn = ?', (isbn,)).fetchone() is None:
+            err = 'Book does not exist!'
+    if err != 'None':
+        flash(err)
+    if err == 'None':
+        db.execute('DELETE FROM Books WHERE b_isbn = ?', (isbn,) )
+    
+
+
+
 
 @bp.route('/', methods=('GET', 'POST'))
 def index():
@@ -128,4 +147,8 @@ def index():
             return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getLibraryUsers())
         if button == "filter users":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getFilteredUsers(request.form["filter"],request.form['input']))
+        if button == "delete book":
+            deleteBook(request.form['input'])
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
+            
             
