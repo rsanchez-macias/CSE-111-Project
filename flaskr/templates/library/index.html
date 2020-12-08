@@ -6,6 +6,27 @@
     #welcome {
         margin-top: 30px;
     }
+
+    #bookTable {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    #navigationFormTwo {
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    #navButtonOneTwo {
+        float: right;
+        margin-bottom: 10px;
+    }
+
+    #navButtonTwoTwo {
+        float: right;
+        margin-bottom: 20px;
+    }
+
 </style>
 
 <!-- LIBRARIAN -->
@@ -86,7 +107,7 @@
 
 <h3>Filter Book</h3>
 
-<form method="post">
+<form action="{{url_for('library.index')}}" method="post">
     <select name="filter" id="filter">
         <option value="title">Title</option>
         <option value="author">Author</option>
@@ -138,19 +159,31 @@
 
 <br>
 
-<table border="1px black">
-    <tr>
-        <th>Book</th>
-        <th>Title</th>
-        <th>Author</th>
-        <th>Year</th>
-        <th>ISBN</th>
-    </tr>
+<form id="navigationForm" action="{{url_for('library.navigate')}}" method="post">
+    {% if sec_num != 0 %}
+    <button id="navButtonOneOne" class="btn btn-secondary" name="button" type="submit" value="back">Back</button>
+    {% endif %}
+
+    {% if sec_num != max_section %}
+    <button id="navButtonOneTwo" class="btn btn-secondary" name="button" type="submit" value="next">Next</button>
+    {% endif %}
+</form>
+
+<table id="bookTable" class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th>Book</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Year</th>
+            <th>ISBN</th>
+        </tr>
+    </thead>
     {% for book in books %}
 
     <tr class="clickable-row">
         <td>
-            <img id="bookImage" src="{{ book['b_image_url']}}" onerror="this.onerror=null; this.src='Default.jpg'"
+            <img id="bookImage" src="{{ book['b_image_url']}}" onerror="this.onerror=null; this.src='/static/default.svg'"
                 alt="" width="100" height="150">
         </td>
 
@@ -164,6 +197,16 @@
 
 
 </table>
+
+<form id="navigationFormTwo" action="{{url_for('library.navigate')}}" method="post">
+    {% if sec_num != 0 %}
+    <button id="navButtonTwoOne" class="btn btn-secondary" name="button" type="submit" value="back">Back</button>
+    {% endif %}
+
+    {% if sec_num != max_section %}
+    <button id="navButtonTwoTwo" class="btn btn-secondary" name="button" type="submit" value="next">Next</button>
+    {% endif %}
+</form>
 
 {% endif %}
 
