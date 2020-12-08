@@ -204,7 +204,6 @@ def handleFilteredBooks():
     books = []
     section_num = 0
 
-    print(request.form["filter"], request.form['input'])
     raw_books = getFilteredBooks(request.form["filter"], request.form['input'])
     divideIntoSections(raw_books)
 
@@ -223,7 +222,6 @@ def index():
         return handleMainGetRequest()
 
     if request.method == 'POST':
-        print('here 1')
         button = request.form["button"]
 
         if button == "refresh books" or button == "return to books":

@@ -162,15 +162,17 @@ def insertReservedEntry(_entry):
 @bp.route('/reserved/' , methods=('GET', 'POST'))
 def reserved():
     success = "The book has been successfully reserved!"
-    failure = "Sorry, you already reserved this book before"
+    already_reserved_msg = "Sorry, you already reserved this book before"
+    checked_before_msg = "Sorry, you checked out this book"
 
     count = bookReservedBefore(book_isbn, g.user['u_userid'])
+    checked_before = bookCheckedBefore(book_isbn, g.user['u_userid'])
 
     message = ""
 
 
     # make reservation
-    if count == 0:
+    if count == 0 and checked_before == 0:
         reservationDate = datetime.datetime.today()
         reservationDate = reservationDate.strftime('%Y-%m-%d')
 
@@ -187,8 +189,10 @@ def reserved():
         insertReservedEntry(newEntry)
 
         message = success
+    elif checked_before != 0: 
+        message = checked_before_msg
     else:
-        message = failure
+        message = already_reserved_msg
     
     image_url = getBookImage(book_isbn)
 
