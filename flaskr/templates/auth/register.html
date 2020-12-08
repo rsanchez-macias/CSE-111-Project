@@ -2,13 +2,103 @@
 
 {% extends 'base.html' %}
 
-{% block header %}
-<h1>{% block title %}Register{% endblock %}</h1>
-{% endblock %}
-
 {% block content %}
 
-<form method="post">
+
+<style>
+
+    .form-register {
+        width: 100%;
+        max-width: 330px;
+        padding: 15px;
+        margin: 0 auto;
+        margin-top: 80px;
+    }
+
+    .form-register .form-control {
+        position: relative;
+        box-sizing: border-box;
+        height: auto;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .form-register .form-control:focus {
+        z-index: 2;
+    }
+
+    #username {
+        margin-bottom: -1px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .form-register input[type="email"] {
+        margin-bottom: -1px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .form-register input[type="password"] {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    #major {
+        margin-bottom: 10px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    #header {
+        text-align: center;
+    }
+
+</style>
+
+
+<form class="form-register" method="post">
+    <h1 id="header" class="h3 mb-3 font-weight-normal">Register:</h1>
+
+    <div class="form-group">
+        <label for="username" class="sr-only">Username</label>
+        <input name="username" id="username" class="form-control" placeholder="Username" required autofocus>
+
+        <label for="email" class="sr-only">Email address</label>
+        <input name="email" type="email" id="email" class="form-control" placeholder="Email address" required
+            autofocus>
+
+        <label for="password" class="sr-only">Password</label>
+        <input name="password" type="password" id="password" class="form-control" placeholder="Password" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="userType">User</label>
+        <select name="userType" id="userType" class="form-control" required>
+            <option value="librarian">Librarian</option>
+            <option value="student" selected>Student</option>
+        </select>
+
+        <label for="school">School</label>
+        <select name="school" id="school" class="form-control" required>
+            <option value="UC Merced" selected>UC Merced</option>
+            <option value="UC Riverside">UC Riverside</option>
+            <option value="UC San Diego">UC San Diego</option>
+            <option value="UC Santa Barbara">UC Santa Barbara</option>
+            <option value="UC Davis">UC Davis</option>
+        </select>
+
+    </div>
+
+    <label for="major">If student, enter major</label>
+    <input class="form-control" name="major" id="major">
+
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+</form>
+
+<!-- <form method="post">
 
     <label for="username">Username</label>
     <input name="username" id="username" required>
@@ -49,5 +139,5 @@
 
     <input type="submit" value="Register">
 
-</form>
+</form> -->
 {% endblock %}
