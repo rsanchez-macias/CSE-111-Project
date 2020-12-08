@@ -6,7 +6,6 @@
 
 
 <style>
-
     .form-register {
         width: 100%;
         max-width: 330px;
@@ -56,6 +55,11 @@
         text-align: center;
     }
 
+
+    .toBold {
+        font-weight: bold;
+    }
+
 </style>
 
 
@@ -67,21 +71,22 @@
         <input name="username" id="username" class="form-control" placeholder="Username" required autofocus>
 
         <label for="email" class="sr-only">Email address</label>
-        <input name="email" type="email" id="email" class="form-control" placeholder="Email address" required
-            autofocus>
+        <input name="email" type="email" id="email" class="form-control" placeholder="Email address" required autofocus>
 
         <label for="password" class="sr-only">Password</label>
         <input name="password" type="password" id="password" class="form-control" placeholder="Password" required>
     </div>
-    
+
     <div class="form-group">
-        <label for="userType">User</label>
+        <label class="toBold" for="userType">User:</label>
         <select name="userType" id="userType" class="form-control" required>
             <option value="librarian">Librarian</option>
             <option value="student" selected>Student</option>
         </select>
+    </div>
 
-        <label for="school">School</label>
+    <div class="form-group">
+        <label class="toBold" for="school">School:</label>
         <select name="school" id="school" class="form-control" required>
             <option value="UC Merced" selected>UC Merced</option>
             <option value="UC Riverside">UC Riverside</option>
@@ -89,55 +94,12 @@
             <option value="UC Santa Barbara">UC Santa Barbara</option>
             <option value="UC Davis">UC Davis</option>
         </select>
-
     </div>
 
-    <label for="major">If student, enter major</label>
+    <label class="toBold" for="major">If student, enter major:</label>
     <input class="form-control" name="major" id="major">
 
     <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
 </form>
 
-<!-- <form method="post">
-
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-
-    <label for="email">Email</label>
-    <input name="email" id="email" required>
-
-    <label for="password">Password</label>
-    <input name="password" id="password" required type="password">
-
-    <br><br>
-
-    <label for="userType">User</label>
-    <select name="userType" id="userType" required>
-        <option value=""></option>
-        <option value="librarian">Librarian</option>
-        <option value="student">Student</option>
-    </select>
-
-    <label for="school">School</label>
-    <select name="school" id="school" required>
-        <option value=""></option>
-        <option value="UC Merced">UC Merced</option>
-        <option value="UC Riverside">UC Riverside</option>
-        <option value="UC San Diego">UC San Diego</option>
-        <option value="UC Santa Barbara">UC Santa Barbara</option>
-        <option value="UC Davis">UC Davis</option>
-    </select>
-
-    <br><br>
-
-    If student, enter major
-
-    <label for="major"></label>
-    <input name="major" id="major">
-
-    <br><br>
-
-    <input type="submit" value="Register">
-
-</form> -->
 {% endblock %}
