@@ -14,7 +14,7 @@
     <p>Available: {{book_count}}</p>
 
     {% if book_count == 0 %}
-    <form action="#" method="post">
+    <form action="{{url_for('checkout.reserved')}}" method="post">
         <input name="button" type="submit" value="reserve book">
     </form> 
     {% else %}
