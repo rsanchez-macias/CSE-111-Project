@@ -105,6 +105,8 @@
 
 <hr>
 
+{% if books %}
+
 <h3>Filter Book</h3>
 
 <form action="{{url_for('library.index')}}" method="post">
@@ -121,6 +123,8 @@
 </form>
 
 <hr>
+
+{% endif %}
 
 {% if books %}
 
@@ -154,6 +158,17 @@
 </form>
 
 <hr>
+
+<h3>Delete Book</h3>
+<form method="post">
+    <input type="input" id="input" name="input" placeholder="ISBN of Book">
+    <button name="button" type="submit" value="delete book">Delete</button>
+</form>
+<hr>
+
+{% for message in get_flashed_messages() %}
+    <div style="color: red; font-size: 30px;" class="flash">{{ message }}</div>
+{% endfor %}
 
 {% endif%}
 
