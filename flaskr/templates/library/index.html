@@ -26,12 +26,11 @@
         float: right;
         margin-bottom: 20px;
     }
-
 </style>
 
 <!-- LIBRARIAN -->
 {% if user == 'librarian' %}
-<h3 id = "welcome">
+<h3 id="welcome">
     WELCOME LIBRARIAN {{ g.user['u_name'] }}!
 </h3>
 
@@ -96,7 +95,7 @@
 
 <!-- STUDENT -->
 {% if user == 'student' %}
-<h3 id = "welcome">
+<h3 id="welcome">
     WELCOME STUDENT {{ g.user['u_name'] }}!
 </h3>
 {% endif %}
@@ -167,7 +166,7 @@
 <hr>
 
 {% for message in get_flashed_messages() %}
-    <div style="color: red; font-size: 30px;" class="flash">{{ message }}</div>
+<div style="color: red; font-size: 30px;" class="flash">{{ message }}</div>
 {% endfor %}
 
 {% endif%}
@@ -198,8 +197,8 @@
 
     <tr class="clickable-row">
         <td>
-            <img id="bookImage" src="{{ book['b_image_url']}}" onerror="this.onerror=null; this.src='/static/default.svg'"
-                alt="" width="100" height="150">
+            <img id="bookImage" src="{{ book['b_image_url']}}"
+                onerror="this.onerror=null; this.src='/static/default.svg'" alt="" width="100" height="150">
         </td>
 
         <td>{{ book['b_title']}}</td>
@@ -227,6 +226,7 @@
 
 {% if user == 'student' %}
 <script>
+
     $(function () {
         $('.clickable-row').click(function () {
             var isbn = $(this).find("td").last().text();
@@ -234,16 +234,20 @@
             var author = $(this).find("td").eq(2).text();
             var year = $(this).find("td").eq(3).text();
 
-            $.getJSON('/book/process',
-                {
-                    isbn: isbn,
-                    title: title,
-                    author: author,
-                    year: year
-                },
-                function (data) {
-                    // do nothing
-                });
+            $.ajax({
+                type: 'GET',
+                url: "{{url_for('checkout.processClick')}}",
+                contentType: 'application/json;charset=UTF-8',
+                data: { 
+                    'isbn': isbn,
+                    'title': title,
+                    'author': author,
+                    'year': year
+                
+                }, success: function (data) {
+                    console.log(data);
+                }
+            });
 
             window.location.href = '/book/description/'
         });
