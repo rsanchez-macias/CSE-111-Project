@@ -43,7 +43,7 @@ def getFilteredBooks(filter, input):
     query = "SELECT * FROM Books, Author, Stockroom, University WHERE s_universityid = un_id AND b_isbn = s_isbn AND b_authorid = a_authorid AND s_universityid = ? AND " + temp
 
     books = []
-    if filter == 'year' or filter == 'b_isbn':
+    if filter == 'year' or filter == 'isbn':
         books = db.execute(query,([g.user["u_universityid"], trimmed_input])).fetchall()
     else:
         books = db.execute(query,[g.user["u_universityid"]]).fetchall()
@@ -66,6 +66,8 @@ def getFilteredUsers(filter, input):
     query = "SELECT * FROM User, University WHERE u_universityid = un_id AND un_id = ? AND " + temp
 
     return db.execute(query,([g.user["u_universityid"], input])).fetchall()
+
+
 def insertBooks(title, author, year, isbn, copies):
     db = get_db()
 
@@ -126,25 +128,121 @@ def deleteBook(isbn):
 
 
 
-@bp.route('/', methods=('GET', 'POST'))
-def index():
-    if request.method == 'GET':
-        return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
+
+def divideIntoSections(_books):
+    global books
+    global max_section
+
+    multiple = 20
+    list_counter = -1
+
+    for i, book in enumerate(_books):
+
+        if i % multiple == 0:
+            list_counter += 1
+            books.append([]) 
+
+        books[list_counter].append(book)
+
+    max_section = len(books) - 1
+
+
+section_num = 0
+books = []
+max_section = 0
+
+@bp.route('/page', methods=('GET', 'POST'))
+def navigate():
+    global section_num
 
     if request.method == 'POST':
         button = request.form["button"]
+
+        if button == "next":
+            section_num += 1
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+        elif button == "back":
+            section_num -= 1
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+
+
+@bp.route('/back_to_list', methods=('GET', 'POST'))
+def backToList():
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+
+
+
+def handleMainGetRequest():
+    global books
+    global section_num
+
+    books = []
+    section_num = 0
+
+    raw_books = getAllBooks()
+    divideIntoSections(raw_books)
+
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+
+def handleRefresh():
+    global books
+    global section_num
+
+    books = []
+    section_num = 0
+
+    raw_books = getAllBooks()
+    divideIntoSections(raw_books)
+
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+
+
+def handleFilteredBooks():
+    global books
+    global section_num
+
+    books = []
+    section_num = 0
+
+    print(request.form["filter"], request.form['input'])
+    raw_books = getFilteredBooks(request.form["filter"], request.form['input'])
+    divideIntoSections(raw_books)
+
+    to_display_books = []
+    if raw_books:
+        to_display_books = books[section_num]
+    
+
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=to_display_books, sec_num=section_num, max_section=max_section)
+
+
+@bp.route('/', methods=('GET', 'POST'))
+def index():
+
+    if request.method == 'GET':
+        return handleMainGetRequest()
+
+    if request.method == 'POST':
+        print('here 1')
+        button = request.form["button"]
+
         if button == "refresh books" or button == "return to books":
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
+            return handleRefresh()
+
         if button == "filter books":
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getFilteredBooks(request.form["filter"],request.form['input']))
+            return handleFilteredBooks()
+
         if button == "insert books":
             insertBooks(request.form['title'],request.form['author'],request.form['year'],request.form['isbn'],request.form['copies'])
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
+            return handleRefresh()
+
         if button == "update book":
             updateBook(request.form['isbn'], request.form['filter'], request.form['input'])
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
+            return handleRefresh()
+
         if button == "refresh users" or button == "search users":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getLibraryUsers())
+
         if button == "filter users":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getFilteredUsers(request.form["filter"],request.form['input']))
         if button == "delete book":

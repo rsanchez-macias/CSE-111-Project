@@ -133,7 +133,7 @@ def redirect_user():
     if choice == "Go back to book":
         return redirect(url_for('book.description'))
     else:
-        return redirect(url_for('library.index'))
+        return redirect(url_for('library.backToList'))
 
 
 def insertCheckedEntry(_entry):
