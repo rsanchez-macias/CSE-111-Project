@@ -8,13 +8,13 @@
     <img id="bookImage" src="{{image_url[0]}}" onerror="this.onerror=null; this.src='Default.jpg'" alt="" width="100"
         height="150">
 
-    <p>ISBN: {{book_isbn}}</p>
+    <p id="checked_isbn">ISBN: {{book_isbn}}</p>
     <p>Author: {{book_author}}</p>
     <p>Year: {{book_year}}</p>
     <p>Available: {{book_count}}</p>
 
     {% if book_count == 0 %}
-    <form action="#" method="post">
+    <form action="{{url_for('checkout.reserved')}}" method="post">
         <input name="button" type="submit" value="reserve book">
     </form> 
     {% else %}

@@ -70,6 +70,62 @@ def bookCheckedBefore(_book_isbn, _user_id):
     return count[0]
 
 
+def bookReservedBefore(_book_isbn, _user_id):
+
+    db = get_db()
+    sql = """
+        SELECT COUNT(*)
+        FROM ReservedBooks
+        WHERE r_isbn = ? AND 
+            r_foruserid = ?
+    """
+
+    args = [_book_isbn, _user_id]
+    count = 0
+
+    try:
+        cur = db.cursor()
+
+        count = cur.execute(sql, args).fetchone()
+        db.commit()
+    except Error as e:
+        db.rollback()
+        print(e)
+
+    return count[0]
+
+
+def getReasonForReservation(_university_id):
+
+    db = get_db()
+    sql = """
+        SELECT COUNT(*)
+        FROM StockRoom
+        WHERE s_universityid = ?
+    """
+
+    reasonOne = "NOT IN SCHOOL"
+    reasonTwo = "NO MORE COPIES"
+
+    args = [_university_id]
+    count = 0
+
+    try:
+        cur = db.cursor()
+
+        count = cur.execute(sql, args).fetchone()
+        db.commit()
+    except Error as e:
+        db.rollback()
+        print(e)
+
+    if count:
+        return reasonTwo
+    else: 
+        return reasonOne
+
+
+
 @bp.route('/redirect_checked/', methods=('GET', 'POST'))
 def redirect_user():
     choice = request.form["button"]
@@ -91,6 +147,53 @@ def insertCheckedEntry(_entry):
         db.rollback()
         print(e)
 
+def insertReservedEntry(_entry):
+    db = get_db()
+    try:
+        sql = "INSERT INTO ReservedBooks VALUES(?, ?, ?, ?)"
+
+        db.execute(sql, _entry)
+        db.commit()
+    except Error as e:
+        db.rollback()
+        print(e)
+
+
+@bp.route('/reserved/' , methods=('GET', 'POST'))
+def reserved():
+    success = "The book has been successfully reserved!"
+    failure = "Sorry, you already reserved this book before"
+
+    count = bookReservedBefore(book_isbn, g.user['u_userid'])
+
+    message = ""
+
+
+    # make reservation
+    if count == 0:
+        reservationDate = datetime.datetime.today()
+        reservationDate = reservationDate.strftime('%Y-%m-%d')
+
+
+        reason = getReasonForReservation(g.user['u_universityid'])
+
+        newEntry = [
+            book_isbn,
+            g.user['u_userid'],
+            reservationDate,
+            reason
+        ]
+
+        insertReservedEntry(newEntry)
+
+        message = success
+    else:
+        message = failure
+    
+    image_url = getBookImage(book_isbn)
+
+    return render_template('users/checkout.html', image_url=image_url[0], info_msg=message)
+
 
 
 @bp.route('/checked/', methods=('GET', 'POST'))
@@ -102,13 +205,10 @@ def checked():
     count = bookCheckedBefore(book_isbn, g.user['u_userid'])
     message = ""
 
-    print(count)
-
     if count == 0:
         removeOneBook(book_isbn, g.user['u_universityid'])
         
         checkedDate = datetime.datetime.today()
-        #tempDate
         expirationDate = checkedDate + datetime.timedelta(days=30)
 
         checkedDate = checkedDate.strftime('%Y-%m-%d')
@@ -160,6 +260,7 @@ def getBookImage(_isbn):
         print(e)
 
     return image_url
+
 
 def getAvailableBooks():
     db = get_db()

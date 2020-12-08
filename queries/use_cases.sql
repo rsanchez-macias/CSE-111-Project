@@ -263,6 +263,10 @@ FROM CheckedBooks, Books
 WHERE cb_isbn = b_isbn AND 
     cb_userid = 2;
 
+DELETE FROM CheckedBooks
+WHERE cb_isbn = "1234" AND 
+    cb_userid = "1";
+
 -- RESERVE BOOKS
 
 INSERT INTO ReservedBooks 

@@ -22,6 +22,21 @@
         margin-top: 20px;
         margin-left: 10px;
     }
+
+    #return_btn {
+        width: 100%;
+        margin: 0px;
+        margin-bottom: 20px;
+    }
+
+    #renew_btn {
+        width: 100%;
+        margin: 0px;
+    }
+
+    #exp_date {
+        color: red;
+    }
 </style>
 
 
@@ -54,28 +69,47 @@
             <h3>Checked Books</h3>
 
             {% if checked_books %}
-            <table class="table">
+            <table id="book_table" class="table">
                 <thead class="thead-dark">
                     <tr>
                         <th>Book</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Year</th>
-                        <th>ISBN</th>
+                        <th>Book Info</th>
+                        <th>Checked-out Info</th>
+                        <th></th>
                     </tr>
                 </thead>
                 {% for book in checked_books %}
 
-                <tr class="clickable-row">
+                <tr id="row" class="clickable-row">
                     <td>
                         <img id="bookImage" src="{{ book['b_image_url']}}"
                             onerror="this.onerror=null; this.src='Default.jpg'" alt="" width="100" height="150">
                     </td>
 
-                    <td>{{ book['b_title']}}</td>
-                    <td>{{ book['a_authorname']}}</td>
-                    <td>{{ book['b_publishedyear']}}</td>
-                    <td id="book-isbn">{{ book['b_isbn']}}</td>
+                    <td id="book_info">
+                        <b>Book title: </b><span>{{ book['b_title']}}</span>
+                        <br />
+                        <b>ISBN: </b> <span id="book_isbn">{{ book['b_isbn']}}</span>
+                        <br />
+                        <b>Author: </b> <span>{{ book['a_authorname']}}</span>
+                    </td>
+
+                    <td>
+                        <b>Checked date: </b><span>{{ book['cb_checkeddate']}}</span>
+                        <br />
+                        <b>Expiration date: </b> <span id="exp_date">{{ book['cb_experiationdate']}}</span>
+                    </td>
+
+                    <td>
+                        <form action=#>
+                            <button id="return_btn" class="btn btn-primary">Return</button>
+                            {% if book['disabled'] == 0 %}
+                            <button id="renew_btn" class="btn btn-secondary">Renew</button>
+                            {% else %}
+                            <button id="renew_btn" class="btn btn-secondary" disabled>Renew</button>
+                            {% endif %}
+                        </form>
+                    </td>
                 </tr>
 
                 {% endfor %}
@@ -83,16 +117,108 @@
             </table>
 
             {% else %}
-                <h5 id="empty_message">Such an emptiness . . .</h5>
+            <h5 id="empty_message">Such an emptiness . . .</h5>
             {% endif %}
 
         </div>
         <div id="reserved" class="tab-pane fade">
             <h3>Reserved</h3>
+
+
+            {% if reserved_books %}
+            <table id="book_table" class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Book</th>
+                        <th>Book Info</th>
+                        <th>Reservation Date</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                {% for book in reserved_books %}
+
+                <tr id="row" class="clickable-row">
+                    <td>
+                        <img id="bookImage" src="{{ book['b_image_url']}}"
+                            onerror="this.onerror=null; this.src='Default.jpg'" alt="" width="100" height="150">
+                    </td>
+
+                    <td id="book_info">
+                        <b>Book title: </b><span>{{ book['b_title']}}</span>
+                        <br />
+                        <b>ISBN: </b> <span id="book_isbn">{{ book['b_isbn']}}</span>
+                        <br />
+                        <b>Author: </b> <span>{{ book['a_authorname']}}</span>
+                    </td>
+
+                    <td><span id="res_date">{{ book['r_reservatindate']}}</span></td>
+                    <td>{{book['r_reason']}}</td>
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+            {% else %}
+            <h5 id="empty_message">Such an emptiness . . .</h5>
+            {% endif %}
         </div>
     </div>
 
 </div>
+
+
+<script>
+
+    $(".btn").click(function (e) {
+        parent = $(this).parent().parent().parent();
+        book_info = $(this).parent().parent().parent().children().eq(1).text();
+        book_isbn = $(this).parent().parent().parent().children().eq(1).find("span#book_isbn").text();
+        book_exp = $(this).parent().parent().parent().children().eq(2).find("span#exp_date");
+
+        button_ref = $(this);
+        
+        action = $(this).text();
+
+        if (action == "Renew") {
+
+            $.ajax({
+                type: 'GET',
+                url: "{{url_for('profile.renew_book')}}",
+                contentType: 'application/json;charset=UTF-8',
+                data: { 'data': book_isbn },
+                success: function (data) {
+
+                    if (data != "failure") {
+                        book_exp.text(data);
+                        button_ref.prop("disabled", true);
+                    }
+                }
+            });
+
+        } else {
+
+            $.ajax({
+                type: 'GET',
+                url: "{{url_for('profile.return_book')}}",
+                contentType: 'application/json;charset=UTF-8',
+                data: { 'data': book_isbn }
+            });
+
+            parent.delay(200).fadeOut(200);
+            parent.animate({
+                "opacity": "0",
+            }, {
+                "complete": function () {
+                    parent.remove();
+                }
+            });
+
+        }
+
+    });
+
+</script>
 
 
 {% endblock %}
