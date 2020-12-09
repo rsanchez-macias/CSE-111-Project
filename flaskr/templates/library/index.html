@@ -4,7 +4,13 @@
 
 <style>
     #welcome {
-        margin-top: 30px;
+        margin-top: 40px;
+        font-size: 32px;
+        margin-bottom: 16px;
+    }
+
+    #university, #filter-title {
+        font-size: 24px;
     }
 
     #bookTable {
@@ -26,6 +32,37 @@
         float: right;
         margin-bottom: 20px;
     }
+
+    .navi-btn {
+        height: 31px;
+        font-size: 13px;
+    }
+
+    #input {
+        max-width: 300px;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+    }
+
+    #filter {
+        height: 31px;
+        font-size: 14px;
+        margin-right: -1px;
+
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .filter-btn {
+        font-size: 13px;
+        height: 31px;
+        margin-right: 10px;
+    }
+
+    #filter-form {
+        margin-bottom: 24px;
+    }
+
 </style>
 
 <!-- LIBRARIAN -->
@@ -100,26 +137,29 @@
 </h3>
 {% endif %}
 
-<h3>{{university["un_name"]}} Books</h3>
+<h3 id="university">{{university["un_name"]}} Books</h3>
 
 <hr>
 
-{% if books %}
+<h3 id="filter-title">Filter Book</h3>
 
-<h3>Filter Book</h3>
+<form id="filter-form" class="form-inline" action="{{url_for('library.index')}}" method="post">
 
-<form action="{{url_for('library.index')}}" method="post">
-    <select name="filter" id="filter">
+    <select class="form-control" name="filter" id="filter">
         <option value="title">Title</option>
         <option value="author">Author</option>
         <option value="year">Year</option>
         <option value="isbn">ISBN</option>
     </select>
-    <input name="input" id="input">
+   
+    <input name="input" id="input" class="form-control form-control-sm mr-3 w-75" type="text" placeholder="Search"
+    aria-label="Search">
 
-    <button name="button" type="submit" value="filter books">Filter</button>
-    <button name="button" type="submit" value="refresh books">Refresh</button>
+    <button class="btn btn-primary filter-btn" name="button" type="submit" value="filter books">Filter</button>
+    <button class="btn btn-primary filter-btn" name="button" type="submit" value="refresh books">Refresh</button>
 </form>
+
+{% if books %}
 
 <hr>
 
@@ -175,16 +215,16 @@
 
 <form id="navigationForm" action="{{url_for('library.navigate')}}" method="post">
     {% if sec_num != 0 %}
-    <button id="navButtonOneOne" class="btn btn-secondary" name="button" type="submit" value="back">Back</button>
+    <button id="navButtonOneOne" class="btn btn-light navi-btn" name="button" type="submit" value="back">Back</button>
     {% endif %}
 
     {% if sec_num != max_section %}
-    <button id="navButtonOneTwo" class="btn btn-secondary" name="button" type="submit" value="next">Next</button>
+    <button id="navButtonOneTwo" class="btn btn-light navi-btn" name="button" type="submit" value="next">Next</button>
     {% endif %}
 </form>
 
 <table id="bookTable" class="table">
-    <thead class="thead-dark">
+    <thead class="thead-light bg-info">
         <tr>
             <th>Book</th>
             <th>Title</th>
@@ -214,11 +254,11 @@
 
 <form id="navigationFormTwo" action="{{url_for('library.navigate')}}" method="post">
     {% if sec_num != 0 %}
-    <button id="navButtonTwoOne" class="btn btn-secondary" name="button" type="submit" value="back">Back</button>
+    <button id="navButtonTwoOne" class="btn btn-light navi-btn" name="button" type="submit" value="back">Back</button>
     {% endif %}
 
     {% if sec_num != max_section %}
-    <button id="navButtonTwoTwo" class="btn btn-secondary" name="button" type="submit" value="next">Next</button>
+    <button id="navButtonTwoTwo" class="btn btn-light navi-btn" name="button" type="submit" value="next">Next</button>
     {% endif %}
 </form>
 

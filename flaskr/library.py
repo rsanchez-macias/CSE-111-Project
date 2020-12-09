@@ -108,6 +108,7 @@ def updateBook(isbn, filter, input):
 
     db.commit()
 
+
 def deleteBook(isbn):
     db = get_db()
     cur = db.cursor()
@@ -124,9 +125,6 @@ def deleteBook(isbn):
     if err == 'None':
         db.execute('DELETE FROM Books WHERE b_isbn = ?', (isbn,) )
     
-
-
-
 
 
 def divideIntoSections(_books):
