@@ -2,18 +2,41 @@
 
 {% block content %}
 
+<style>
+    #title {
+        margin-top: 30px;
+    }
+
+    #bookImage {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    #message {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .back-to {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+</style>
+
 <div class="container">
-    <h3>{{book_title}}</h3>
+    <h3 id="title">{{book_title}}</h3>
 
-    <img id="bookImage" src="{{image_url}}" onerror="this.onerror=null; this.src='/static/default.svg'" alt="" width="100"
-        height="150">
+    <div class="container">
+        <img id="bookImage" src="{{image_url}}" onerror="this.onerror=null; this.src='/static/default.svg'" alt=""
+            width="100" height="150">
 
-    <p>{{info_msg}}</p>
+        <p id="message">{{info_msg}}</p>
+    </div>
 
     <form action="{{url_for('checkout.redirect_user')}}" method="post">
-        <input name="button" type="submit" value="Go back to book">
-        <input name="button" type="submit" value="Go back to list">
-    </form> 
+        <input class="btn btn-secondary bakc-to" name="button" type="submit" value="Go back to book">
+        <input class="btn btn-secondary back-to" name="button" type="submit" value="Go back to list">
+    </form>
 
 </div>
 

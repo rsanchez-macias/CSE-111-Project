@@ -196,7 +196,7 @@ def reserved():
     
     image_url = getBookImage(book_isbn)
 
-    return render_template('users/checkout.html', image_url=image_url[0], info_msg=message)
+    return render_template('users/checkout.html', book_title=book_title, image_url=image_url[0], info_msg=message)
 
 
 
@@ -232,7 +232,7 @@ def checked():
     
     image_url = getBookImage(book_isbn)
 
-    return render_template('users/checkout.html', image_url=image_url[0], info_msg=message)
+    return render_template('users/checkout.html', book_title=book_title, image_url=image_url[0], info_msg=message)
 
 
 @bp.route('/clearfields/', methods=('GET', 'POST'))
