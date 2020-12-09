@@ -158,16 +158,18 @@ def navigate():
 
         if button == "next":
             section_num += 1
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), 
+                books=books[section_num], sec_num=section_num, max_section=max_section, hide=0)
         elif button == "back":
             section_num -= 1
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), 
+                books=books[section_num], sec_num=section_num, max_section=max_section, hide=0)
 
 
 @bp.route('/back_to_list', methods=('GET', 'POST'))
 def backToList():
-    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
-
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], 
+        sec_num=section_num, max_section=max_section, hide=0)
 
 
 def handleMainGetRequest():
@@ -180,7 +182,9 @@ def handleMainGetRequest():
     raw_books = getAllBooks()
     divideIntoSections(raw_books)
 
-    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], 
+        sec_num=section_num, max_section=max_section, hide=0)
+
 
 def handleRefresh():
     global books
@@ -192,7 +196,8 @@ def handleRefresh():
     raw_books = getAllBooks()
     divideIntoSections(raw_books)
 
-    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], sec_num=section_num, max_section=max_section)
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], 
+        sec_num=section_num, max_section=max_section, hide=0)
 
 
 def handleFilteredBooks():
@@ -210,7 +215,8 @@ def handleFilteredBooks():
         to_display_books = books[section_num]
     
 
-    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=to_display_books, sec_num=section_num, max_section=max_section)
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=to_display_books, 
+        sec_num=section_num, max_section=max_section, hide=0)
 
 
 @bp.route('/', methods=('GET', 'POST'))
@@ -237,10 +243,13 @@ def index():
             return handleRefresh()
 
         if button == "refresh users" or button == "search users":
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getLibraryUsers())
+            return render_template('library/index.html', user=getUser(), university=getUniversity(),
+                libraryUsers=getLibraryUsers(), hide=1)
 
         if button == "filter users":
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), libraryUsers=getFilteredUsers(request.form["filter"],request.form['input']))
+            return render_template('library/index.html', user=getUser(), university=getUniversity(), 
+                libraryUsers=getFilteredUsers(request.form["filter"],request.form['input']), hide=1)
+                
         if button == "delete book":
             deleteBook(request.form['input'])
             return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())

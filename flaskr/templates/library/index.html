@@ -2,6 +2,35 @@
 
 {% block content %}
 
+<script>
+
+    $(function () {
+        $('.clickable-row').click(function () {
+            var isbn = $(this).find("td").last().text();
+            var title = $(this).find("td").eq(1).text();
+            var author = $(this).find("td").eq(2).text();
+            var year = $(this).find("td").eq(3).text();
+
+            $.ajax({
+                type: 'GET',
+                url: "{{url_for('checkout.processClick')}}",
+                contentType: 'application/json;charset=UTF-8',
+                data: {
+                    'isbn': isbn,
+                    'title': title,
+                    'author': author,
+                    'year': year
+
+                }, success: function (data) {
+                    console.log(data);
+                }
+            });
+
+            window.location.href = '/book/description/'
+        });
+    });
+</script>
+
 <style>
     #welcome {
         margin-top: 40px;
@@ -9,7 +38,8 @@
         margin-bottom: 16px;
     }
 
-    #university, #filter-title {
+    #university,
+    #filter-title {
         font-size: 24px;
     }
 
@@ -62,7 +92,6 @@
     #filter-form {
         margin-bottom: 24px;
     }
-
 </style>
 
 <!-- LIBRARIAN -->
@@ -106,7 +135,7 @@
     <input name="input" id="input">
 
     <button name="button" type="submit" value="filter users">Filter</button>
-    <button name="button" type="submit" value="refresh books">Refresh</button>
+    <button name="button" type="submit" value="refresh users">Refresh</button>
 
 </form>
 
@@ -137,10 +166,13 @@
 </h3>
 {% endif %}
 
+{% if hide != 1 %}
 <h3 id="university">{{university["un_name"]}} Books</h3>
 
 <hr>
+{% endif %}
 
+{% if hide != 1 %}
 <h3 id="filter-title">Filter Book</h3>
 
 <form id="filter-form" class="form-inline" action="{{url_for('library.index')}}" method="post">
@@ -151,13 +183,14 @@
         <option value="year">Year</option>
         <option value="isbn">ISBN</option>
     </select>
-   
+
     <input name="input" id="input" class="form-control form-control-sm mr-3 w-75" type="text" placeholder="Search"
-    aria-label="Search">
+        aria-label="Search">
 
     <button class="btn btn-primary filter-btn" name="button" type="submit" value="filter books">Filter</button>
     <button class="btn btn-primary filter-btn" name="button" type="submit" value="refresh books">Refresh</button>
 </form>
+{% endif %}
 
 {% if books %}
 
@@ -262,37 +295,6 @@
     {% endif %}
 </form>
 
-{% endif %}
-
-{% if user == 'student' %}
-<script>
-
-    $(function () {
-        $('.clickable-row').click(function () {
-            var isbn = $(this).find("td").last().text();
-            var title = $(this).find("td").eq(1).text();
-            var author = $(this).find("td").eq(2).text();
-            var year = $(this).find("td").eq(3).text();
-
-            $.ajax({
-                type: 'GET',
-                url: "{{url_for('checkout.processClick')}}",
-                contentType: 'application/json;charset=UTF-8',
-                data: { 
-                    'isbn': isbn,
-                    'title': title,
-                    'author': author,
-                    'year': year
-                
-                }, success: function (data) {
-                    console.log(data);
-                }
-            });
-
-            window.location.href = '/book/description/'
-        });
-    });
-</script>
 {% endif %}
 
 {% endblock %}

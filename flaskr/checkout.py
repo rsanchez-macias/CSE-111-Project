@@ -282,7 +282,7 @@ def getAvailableBooks():
 
             (SELECT * 
             FROM StockRoom 
-            WHERE s_universityid = 1) S
+            WHERE s_universityid = ?) S
 
             ON S.s_isbn = b_isbn
         WHERE s_universityid = ? AND 
@@ -294,7 +294,7 @@ def getAvailableBooks():
     count = 0
 
     try: 
-        args = [user_universityid, book_isbn]
+        args = [user_universityid, user_universityid, book_isbn]
         count = db.execute(sql, args).fetchone()
         db.commit()
     except Error as e:
