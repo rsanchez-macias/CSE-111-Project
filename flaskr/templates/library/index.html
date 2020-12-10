@@ -371,11 +371,12 @@
     <input class="form-control delete-input" type="input" id="input" name="input" placeholder="ISBN of Book">
     <button class="btn btn-primary delete-btn" name="button" type="submit" value="delete book">Delete</button>
 </form>
-<hr>
 
 {% for message in get_flashed_messages() %}
-<div style="color: red; font-size: 30px;" class="flash">{{ message }}</div>
+<div style="color: red; font-size: 30px;" class="flash"><h4>{{ message }}</h4></div>
 {% endfor %}
+
+<hr>
 
 {% endif%}
 
