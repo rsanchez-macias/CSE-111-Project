@@ -7,6 +7,8 @@ from flaskr.auth import login_required
 from flaskr.db import get_db
 from random import randint
 
+from sqlite3 import Error
+
 bp = Blueprint('library', __name__)
 
 def getUser():
@@ -56,6 +58,7 @@ def getLibraryUsers():
     return db.execute('SELECT * FROM User, University WHERE u_universityid = un_id AND un_id = ?',(g.user["u_universityid"],)).fetchall()
 
 def getFilteredUsers(filter, input):
+
     db = get_db()
     input = "%" + input + "%"
     if filter == "name":
@@ -65,7 +68,9 @@ def getFilteredUsers(filter, input):
     
     query = "SELECT * FROM User, University WHERE u_universityid = un_id AND un_id = ? AND " + temp
 
-    return db.execute(query,([g.user["u_universityid"], input])).fetchall()
+    users = db.execute(query,([g.user["u_universityid"], input])).fetchall()
+
+    return users
 
 
 def insertBooks(title, author, year, isbn, copies):
@@ -82,15 +87,25 @@ def insertBooks(title, author, year, isbn, copies):
     while cur.execute('SELECT * FROM Author WHERE a_authorid = ?', (authorId,)).fetchone() is not None:
         authorId = randint(0,100000)
 
-    if checkAuthor is not None:
-        db.execute('INSERT INTO Books VALUES (?, ?, ?, ?, ?)',(bookId,isbn,checkAuthor["a_authorid"],year,title))
-    else:
-        db.execute('INSERT INTO Author VALUES (?, ?)', (authorId,author))
-        db.execute('INSERT INTO Books VALUES (?, ?, ?, ?, ?)',(bookId,isbn,authorId,year,title))
-        
-    db.execute('INSERT INTO StockRoom VALUES (?,?,?)',(g.user["u_universityid"], isbn, copies))   
 
-    db.commit()
+    try: 
+        default_book_img = "https://dl.acm.org/specs/products/acm/releasedAssets/images/cover-default--book.svg"
+
+        if checkAuthor is not None:
+            new_book = (bookId,isbn, checkAuthor["a_authorid"],year,title, default_book_img, default_book_img)
+            db.execute('INSERT INTO Books VALUES (?, ?, ?, ?, ?, ?, ?)', new_book)
+        else:
+            new_book = (bookId, isbn, authorId, year, title, default_book_img, default_book_img)
+            db.execute('INSERT INTO Author VALUES (?, ?)', (authorId,author))
+            db.execute('INSERT INTO Books VALUES (?, ?, ?, ?, ?, ?, ?)', new_book)
+            
+        db.execute('INSERT INTO StockRoom VALUES (?,?,?)', (g.user["u_universityid"], isbn, copies))   
+
+        db.commit()
+    except Error as e: 
+        db.rollback()
+        print(e)
+
 
 def updateBook(isbn, filter, input):
     db = get_db()
@@ -102,11 +117,28 @@ def updateBook(isbn, filter, input):
     else:
         temp = "b_isbn = ?"
 
-    query = "UPDATE Books SET " + temp + " WHERE b_isbn = ?"
+    try: 
 
-    db.execute(query,([input, isbn]))
+        query = "UPDATE Books SET " + temp + " WHERE b_isbn = ?"
+        db.execute(query,([input, isbn]))
 
-    db.commit()
+        if filter == "isbnNEW":
+            temp = "s_isbn = ?"
+            query = "UPDATE StockRoom SET " + temp + " WHERE s_isbn = ?"
+            db.execute(query, ([input, isbn]))
+
+            temp = "cb_isbn = ?"
+            query = "UPDATE CheckedBooks SET " + temp + " WHERE cb_isbn = ?"
+            db.execute(query, ([input, isbn]))
+
+            temp = "r_isbn = ?"
+            query = "UPDATE ReservedBooks SET " + temp + " WHERE r_isbn = ?"
+            db.execute(query, ([input, isbn]))
+
+        db.commit()
+    except Error as e: 
+        db.rollback()
+        print(e)
 
 
 def deleteBook(isbn):
@@ -123,8 +155,15 @@ def deleteBook(isbn):
     if err != 'None':
         flash(err)
     if err == 'None':
-        db.execute('DELETE FROM Books WHERE b_isbn = ?', (isbn,) )
-    
+        try: 
+            db.execute('DELETE FROM Books WHERE b_isbn = ?', (isbn,) )
+            db.execute('DELETE FROM StockRoom WHERE s_isbn = ?', (isbn,) )
+
+            db.commit()
+
+        except Error as e:
+            db.rollback()
+            print(e)
 
 
 def divideIntoSections(_books):
@@ -219,6 +258,12 @@ def handleFilteredBooks():
         sec_num=section_num, max_section=max_section, hide=0)
 
 
+
+def handleDelete():
+    deleteBook(request.form['input'])
+    return handleRefresh()
+
+
 @bp.route('/', methods=('GET', 'POST'))
 def index():
 
@@ -249,9 +294,8 @@ def index():
         if button == "filter users":
             return render_template('library/index.html', user=getUser(), university=getUniversity(), 
                 libraryUsers=getFilteredUsers(request.form["filter"],request.form['input']), hide=1)
-                
+
         if button == "delete book":
-            deleteBook(request.form['input'])
-            return render_template('library/index.html', user=getUser(), university=getUniversity(), books=getAllBooks())
+            return handleDelete()
             
             

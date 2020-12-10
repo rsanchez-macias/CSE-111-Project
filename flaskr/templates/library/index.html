@@ -92,6 +92,40 @@
     #filter-form {
         margin-bottom: 24px;
     }
+
+
+    #insert-form {
+        max-width: 300px;
+    }
+
+    .insert-input-t {
+        margin-bottom: -1px;
+
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .insert-input-b {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+
+        margin-bottom: 2px;
+    }
+
+    .insert-input-m {
+        margin-bottom: -1px;
+
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .insert-input-m:focus, .insert-input-b:focus, .insert-input-t:focus {
+        outline: none;
+        box-shadow: none;
+    } 
+
 </style>
 
 <!-- LIBRARIAN -->
@@ -126,9 +160,8 @@
 
 <h3>Registered Users at {{university["un_name"]}} </h3>
 
-<form method="post">
+<form action="{{url_for('library.index')}}" method="post">
     <select name="filter" id="filter">
-        <option value=""></option>
         <option value="name">Name</option>
         <option value="email">Email</option>
     </select>
@@ -145,12 +178,10 @@
         <th>Email</th>
     </tr>
     {% for libraryUser in libraryUsers %}
-    {% if not loop.last %}
     <tr>
         <td>{{ libraryUser['u_name']}}</td>
         <td>{{ libraryUser['u_email']}}</td>
     </tr>
-    {% endif %}
     {% endfor %}
 
 </table>
@@ -201,38 +232,39 @@
 {% if books %}
 
 {% if user == 'librarian' %}
+
 <h3>Insert New Book</h3>
 
-<form method="post">
-    <input type="text" id="title" name="title" placeholder="Title">
-    <input type="text" id="author" name="author" placeholder="Author">
-    <input type="text" id="year" name="year" placeholder="Year">
-    <input type="text" id="isbn" name="isbn" placeholder="ISBN">
-    <input type="text" id="copies" name="copies" placeholder="# of Copies">
-    <button name="button" type="submit" value="insert books">Insert</button>
+<form id="insert-form" action="{{url_for('library.index')}}" method="post">
+    <div id="insert-form-box" class="form-group">
+        <input class="form-control insert-input-t" type="text" id="title" name="title" placeholder="Title">
+        <input class="form-control insert-input-m" type="text" id="author" name="author" placeholder="Author">
+        <input class="form-control insert-input-m" type="text" id="year" name="year" placeholder="Year">
+        <input class="form-control insert-input-m" type="text" id="isbn" name="isbn" placeholder="ISBN">
+        <input class="form-control insert-input-b" type="text" id="copies" name="copies" placeholder="# of Copies">
+        <button id="insert-btn" class="btn btn-primary form-control" name="button" type="submit" value="insert books">Insert</button>
+    </div>
 </form>
 
 <hr>
 
 <h3>Update Book</h3>
 
-<form method="post">
+<form action="{{url_for('library.index')}}" method="post">
     <input type="input" id="isbn" name="isbn" placeholder="ISBN of Book">
     <select name="filter" id="filter">
-        <option value=""></option>
-        <option value="title">Title</option>
+        <option value="title" selected>Title</option>
         <option value="year">Year</option>
         <option value="isbnNEW">ISBN</option>
     </select>
     <input name="input" id="input">
     <button name="button" type="submit" value="update book">Update</button>
-
 </form>
 
 <hr>
 
 <h3>Delete Book</h3>
-<form method="post">
+<form action="{{url_for('library.index')}}" method="post">
     <input type="input" id="input" name="input" placeholder="ISBN of Book">
     <button name="button" type="submit" value="delete book">Delete</button>
 </form>
