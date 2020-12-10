@@ -162,15 +162,17 @@ def insertReservedEntry(_entry):
 @bp.route('/reserved/' , methods=('GET', 'POST'))
 def reserved():
     success = "The book has been successfully reserved!"
-    failure = "Sorry, you already reserved this book before"
+    already_reserved_msg = "Sorry, you already reserved this book before"
+    checked_before_msg = "Sorry, you checked out this book"
 
     count = bookReservedBefore(book_isbn, g.user['u_userid'])
+    checked_before = bookCheckedBefore(book_isbn, g.user['u_userid'])
 
     message = ""
 
 
     # make reservation
-    if count == 0:
+    if count == 0 and checked_before == 0:
         reservationDate = datetime.datetime.today()
         reservationDate = reservationDate.strftime('%Y-%m-%d')
 
@@ -187,12 +189,14 @@ def reserved():
         insertReservedEntry(newEntry)
 
         message = success
+    elif checked_before != 0: 
+        message = checked_before_msg
     else:
-        message = failure
+        message = already_reserved_msg
     
     image_url = getBookImage(book_isbn)
 
-    return render_template('users/checkout.html', image_url=image_url[0], info_msg=message)
+    return render_template('users/checkout.html', book_title=book_title, image_url=image_url[0], info_msg=message)
 
 
 
@@ -228,7 +232,7 @@ def checked():
     
     image_url = getBookImage(book_isbn)
 
-    return render_template('users/checkout.html', image_url=image_url[0], info_msg=message)
+    return render_template('users/checkout.html', book_title=book_title, image_url=image_url[0], info_msg=message)
 
 
 @bp.route('/clearfields/', methods=('GET', 'POST'))
@@ -278,7 +282,7 @@ def getAvailableBooks():
 
             (SELECT * 
             FROM StockRoom 
-            WHERE s_universityid = 1) S
+            WHERE s_universityid = ?) S
 
             ON S.s_isbn = b_isbn
         WHERE s_universityid = ? AND 
@@ -290,7 +294,7 @@ def getAvailableBooks():
     count = 0
 
     try: 
-        args = [user_universityid, book_isbn]
+        args = [user_universityid, user_universityid, book_isbn]
         count = db.execute(sql, args).fetchone()
         db.commit()
     except Error as e:

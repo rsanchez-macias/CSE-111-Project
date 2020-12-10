@@ -2,9 +2,50 @@
 
 {% block content %}
 
+<script>
+
+    $(function () {
+        $('.clickable-row').click(function () {
+            var isbn = $(this).find("td").last().text();
+            var title = $(this).find("td").eq(1).text();
+            var author = $(this).find("td").eq(2).text();
+            var year = $(this).find("td").eq(3).text();
+
+            $.ajax({
+                type: 'GET',
+                url: "{{url_for('checkout.processClick')}}",
+                contentType: 'application/json;charset=UTF-8',
+                data: {
+                    'isbn': isbn,
+                    'title': title,
+                    'author': author,
+                    'year': year
+
+                }, success: function (data) {
+                    console.log(data);
+                }
+            });
+
+            window.location.href = '/book/description/'
+        });
+    });
+</script>
+
 <style>
     #welcome {
-        margin-top: 30px;
+        margin-top: 40px;
+        font-size: 32px;
+        margin-bottom: 16px;
+    }
+
+    #university,
+    #filter-title,
+    #delete-title,
+    #insert-title,
+    #update-title,
+    #users-title {
+        margin-top: 24px;
+        font-size: 24px;
     }
 
     #bookTable {
@@ -27,65 +68,205 @@
         margin-bottom: 20px;
     }
 
+    .navi-btn {
+        height: 31px;
+        font-size: 13px;
+    }
+
+    #input {
+        max-width: 300px;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+    }
+
+    #filter {
+        height: 31px;
+        font-size: 14px;
+        margin-right: -1px;
+
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .filter-btn {
+        font-size: 13px;
+        height: 31px;
+        margin-right: 10px;
+    }
+
+    #filter-form {
+        margin-bottom: 24px;
+    }
+
+
+    #insert-form {
+        max-width: 300px;
+    }
+
+    #insert-btn {
+        font-size: 13px;
+        height: 31px;
+
+        margin-top: 10px;
+        margin-bottom: 16px;
+    }
+
+    .insert-input-t {
+        margin-bottom: -1px;
+
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+
+        height: 31px;
+        font-size: 14px;
+    }
+
+    .insert-input-b {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+
+        margin-bottom: 2px;
+
+        height: 31px;
+        font-size: 14px;
+    }
+
+    .insert-input-m {
+        margin-bottom: -1px;
+
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+
+        height: 31px;
+        font-size: 14px;
+    }
+
+    .insert-input-m:focus,
+    .insert-input-b:focus,
+    .insert-input-t:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    .update-input-isbn {
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+        margin-right: -1px;
+
+        height: 31px;
+        font-size: 14px;
+    }
+
+    #update-form {
+        margin-bottom: 30px;
+    }
+
+    #update-select {
+        height: 31px;
+        font-size: 14px;
+
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        margin-right: -1px;
+    }
+
+    .update-input {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+
+        height: 31px;
+        font-size: 14px;
+    }
+
+    .update-submit-btn {
+        font-size: 13px;
+        height: 31px;
+
+        margin-left: 10px;
+    }
+
+    #delete-form {
+        margin-bottom: 30px;
+    }
+
+    .delete-input {
+        height: 31px;
+        font-size: 14px;
+    }
+
+    .delete-btn {
+        font-size: 13px;
+        height: 31px;
+
+        margin-left: 10px;
+    }
+
+    #go-to-users {
+        font-size: 13px;
+        height: 31px;
+
+        margin-left: 10px;
+    }
+
+    #to-users-title {
+        margin-top: 6px;
+    }
+
+    #user-table {
+        max-width: 500px;
+    }
+
+    #bookImage {
+        margin: -7px;
+    }
 </style>
 
 <!-- LIBRARIAN -->
 {% if user == 'librarian' %}
-<h3 id = "welcome">
+<h3 id="welcome">
     WELCOME LIBRARIAN {{ g.user['u_name'] }}!
 </h3>
 
-<hr>
-
-{% if not libraryUsers %}
-
-<h3>
-    <form method="post">
-        Library Users
-        <button name="button" type="submit" value="search users">Users</button>
-    </form>
-</h3>
-
-<hr>
-
-{% endif %}
 
 {% if libraryUsers %}
 
-<h3>
-    <form method="post">
-        Return to Books
-        <button name="button" type="submit" value="return to books">Books</button>
-    </form>
-</h3>
+<hr>
 
-<h3>Registered Users at {{university["un_name"]}} </h3>
+<form id="to-users-form" class="form-inline" method="post">
+    <h4 id="to-users-title">Return to Books</h4>
+    <button id="go-to-users" class="btn btn-primary" name="button" type="submit" value="return to books">Books</button>
+</form>
 
-<form method="post">
-    <select name="filter" id="filter">
-        <option value=""></option>
+<hr>
+<h3 id="users-title">Registered Users at {{university["un_name"]}} </h3>
+
+<form id="filter-form" class="form-inline" action="{{url_for('library.index')}}" method="post">
+    <select class="form-control" name="filter" id="filter">
         <option value="name">Name</option>
         <option value="email">Email</option>
     </select>
-    <input name="input" id="input">
+    <input name="input" id="input" class="form-control form-control-sm mr-3 w-75" type="text" placeholder="Search"
+        aria-label="Search">
 
-    <button name="button" type="submit" value="filter users">Filter</button>
-    <button name="button" type="submit" value="refresh books">Refresh</button>
+    <button class="btn btn-primary filter-btn" name="button" type="submit" value="filter users">Filter</button>
+    <button class="btn btn-primary filter-btn" name="button" type="submit" value="refresh users">Refresh</button>
 
 </form>
 
-<table border="1px black">
+<table id="user-table" class="table table-bordered">
     <tr>
         <th>Name</th>
         <th>Email</th>
     </tr>
     {% for libraryUser in libraryUsers %}
-    {% if not loop.last %}
     <tr>
         <td>{{ libraryUser['u_name']}}</td>
         <td>{{ libraryUser['u_email']}}</td>
     </tr>
-    {% endif %}
     {% endfor %}
 
 </table>
@@ -96,31 +277,99 @@
 
 <!-- STUDENT -->
 {% if user == 'student' %}
-<h3 id = "welcome">
+<h3 id="welcome">
     WELCOME STUDENT {{ g.user['u_name'] }}!
 </h3>
 {% endif %}
 
-<h3>{{university["un_name"]}} Books</h3>
+{% if hide != 1 %}
+<h3 id="university">{{university["un_name"]}} Books</h3>
+
+<hr>
+{% endif %}
+
+{% if user == 'librarian'%}
+{% if not libraryUsers %}
+
+<form id="to-users-form" class="form-inline" method="post">
+    <h4 id="to-users-title">Go to Library Users</h4>
+    <button id="go-to-users" class="btn btn-primary" name="button" type="submit" value="search users">Users</button>
+</form>
 
 <hr>
 
-{% if books %}
+{% endif %}
+{% endif %}
 
-<h3>Filter Book</h3>
+{% if hide != 1 %}
 
-<form action="{{url_for('library.index')}}" method="post">
-    <select name="filter" id="filter">
+
+{% if user == 'librarian' %}
+
+<h3 id="insert-title">Insert New Book</h3>
+
+<form id="insert-form" action="{{url_for('library.index')}}" method="post">
+    <div id="insert-form-box" class="form-group">
+        <input class="form-control insert-input-t" type="text" id="title" name="title" placeholder="Title">
+        <input class="form-control insert-input-m" type="text" id="author" name="author" placeholder="Author">
+        <input class="form-control insert-input-m" type="text" id="year" name="year" placeholder="Year">
+        <input class="form-control insert-input-m" type="text" id="isbn" name="isbn" placeholder="ISBN">
+        <input class="form-control insert-input-b" type="text" id="copies" name="copies" placeholder="# of Copies">
+        <button id="insert-btn" class="btn btn-primary form-control" name="button" type="submit"
+            value="insert books">Insert</button>
+    </div>
+</form>
+
+<hr>
+
+<h3 id="update-title">Update Book</h3>
+
+<form id="update-form" class="form-inline" action="{{url_for('library.index')}}" method="post">
+    <input class="form-control update-input-isbn" type="input" id="isbn" name="isbn" placeholder="ISBN of Book">
+    <select id="update-select" class="form-control" name="filter" id="filter">
+        <option value="title" selected>Title</option>
+        <option value="year">Year</option>
+        <option value="isbnNEW">ISBN</option>
+    </select>
+    <input class="form-control update-input" name="input" id="input" placeholder="Enter input">
+    <button class="btn btn-primary update-submit-btn" name="button" type="submit" value="update book">Update</button>
+</form>
+
+<hr>
+
+<h3 id="delete-title">Delete Book</h3>
+<form id="delete-form" class="form-inline" action="{{url_for('library.index')}}" method="post">
+    <input class="form-control delete-input" type="input" id="input" name="input" placeholder="ISBN of Book">
+    <button class="btn btn-primary delete-btn" name="button" type="submit" value="delete book">Delete</button>
+</form>
+<hr>
+
+{% for message in get_flashed_messages() %}
+<div style="color: red; font-size: 30px;" class="flash">{{ message }}</div>
+{% endfor %}
+
+{% endif%}
+
+<h3 id="filter-title">Filter Book</h3>
+
+<form id="filter-form" class="form-inline" action="{{url_for('library.index')}}" method="post">
+
+    <select class="form-control" name="filter" id="filter">
         <option value="title">Title</option>
         <option value="author">Author</option>
         <option value="year">Year</option>
         <option value="isbn">ISBN</option>
     </select>
-    <input name="input" id="input">
 
-    <button name="button" type="submit" value="filter books">Filter</button>
-    <button name="button" type="submit" value="refresh books">Refresh</button>
+    <input name="input" id="input" class="form-control form-control-sm mr-3 w-75" type="text" placeholder="Search"
+        aria-label="Search">
+
+    <button class="btn btn-primary filter-btn" name="button" type="submit" value="filter books">Filter</button>
+    <button class="btn btn-primary filter-btn" name="button" type="submit" value="refresh books">Refresh</button>
 </form>
+{% endif %}
+
+{% if books %}
 
 <hr>
 
@@ -128,64 +377,20 @@
 
 {% if books %}
 
-{% if user == 'librarian' %}
-<h3>Insert New Book</h3>
-
-<form method="post">
-    <input type="text" id="title" name="title" placeholder="Title">
-    <input type="text" id="author" name="author" placeholder="Author">
-    <input type="text" id="year" name="year" placeholder="Year">
-    <input type="text" id="isbn" name="isbn" placeholder="ISBN">
-    <input type="text" id="copies" name="copies" placeholder="# of Copies">
-    <button name="button" type="submit" value="insert books">Insert</button>
-</form>
-
-<hr>
-
-<h3>Update Book</h3>
-
-<form method="post">
-    <input type="input" id="isbn" name="isbn" placeholder="ISBN of Book">
-    <select name="filter" id="filter">
-        <option value=""></option>
-        <option value="title">Title</option>
-        <option value="year">Year</option>
-        <option value="isbnNEW">ISBN</option>
-    </select>
-    <input name="input" id="input">
-    <button name="button" type="submit" value="update book">Update</button>
-
-</form>
-
-<hr>
-
-<h3>Delete Book</h3>
-<form method="post">
-    <input type="input" id="input" name="input" placeholder="ISBN of Book">
-    <button name="button" type="submit" value="delete book">Delete</button>
-</form>
-<hr>
-
-{% for message in get_flashed_messages() %}
-    <div style="color: red; font-size: 30px;" class="flash">{{ message }}</div>
-{% endfor %}
-
-{% endif%}
-
 <br>
 
 <form id="navigationForm" action="{{url_for('library.navigate')}}" method="post">
     {% if sec_num != 0 %}
-    <button id="navButtonOneOne" class="btn btn-secondary" name="button" type="submit" value="back">Back</button>
+    <button id="navButtonOneOne" class="btn btn-light navi-btn" name="button" type="submit" value="back">Back</button>
     {% endif %}
 
     {% if sec_num != max_section %}
-    <button id="navButtonOneTwo" class="btn btn-secondary" name="button" type="submit" value="next">Next</button>
+    <button id="navButtonOneTwo" class="btn btn-light navi-btn" name="button" type="submit" value="next">Next</button>
     {% endif %}
 </form>
 
-<table id="bookTable" class="table">
-    <thead class="thead-dark">
+<table id="bookTable" class="table table-bordered">
+    <thead class="thead-light bg-info">
         <tr>
             <th>Book</th>
             <th>Title</th>
@@ -198,8 +403,8 @@
 
     <tr class="clickable-row">
         <td>
-            <img id="bookImage" src="{{ book['b_image_url']}}" onerror="this.onerror=null; this.src='/static/default.svg'"
-                alt="" width="100" height="150">
+            <img id="bookImage" src="{{ book['b_image_url']}}"
+                onerror="this.onerror=null; this.src='/static/default.svg'" alt="" width="100" height="150">
         </td>
 
         <td>{{ book['b_title']}}</td>
@@ -215,40 +420,14 @@
 
 <form id="navigationFormTwo" action="{{url_for('library.navigate')}}" method="post">
     {% if sec_num != 0 %}
-    <button id="navButtonTwoOne" class="btn btn-secondary" name="button" type="submit" value="back">Back</button>
+    <button id="navButtonTwoOne" class="btn btn-light navi-btn" name="button" type="submit" value="back">Back</button>
     {% endif %}
 
     {% if sec_num != max_section %}
-    <button id="navButtonTwoTwo" class="btn btn-secondary" name="button" type="submit" value="next">Next</button>
+    <button id="navButtonTwoTwo" class="btn btn-light navi-btn" name="button" type="submit" value="next">Next</button>
     {% endif %}
 </form>
 
-{% endif %}
-
-{% if user == 'student' %}
-<script>
-    $(function () {
-        $('.clickable-row').click(function () {
-            var isbn = $(this).find("td").last().text();
-            var title = $(this).find("td").eq(1).text();
-            var author = $(this).find("td").eq(2).text();
-            var year = $(this).find("td").eq(3).text();
-
-            $.getJSON('/book/process',
-                {
-                    isbn: isbn,
-                    title: title,
-                    author: author,
-                    year: year
-                },
-                function (data) {
-                    // do nothing
-                });
-
-            window.location.href = '/book/description/'
-        });
-    });
-</script>
 {% endif %}
 
 {% endblock %}
