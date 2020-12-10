@@ -166,6 +166,33 @@ def deleteBook(isbn):
             print(e)
 
 
+def getBooksByGenre(_genre):
+    db = get_db()
+
+    books = []
+
+    try:
+        sql = """
+            SELECT *
+            FROM Books, Author, Stockroom, University, BookTags, Tags
+            WHERE b_bookid = bt_bookid AND 
+                bt_tagid = t_tagid AND 
+                b_authorid = a_authorid AND 
+                s_universityid = un_id AND 
+                b_isbn = s_isbn AND
+                t_description = ? AND
+                s_universityid = ?
+        """
+
+        args = [_genre, g.user['u_universityid']]
+        cur = db.cursor()
+
+        books = cur.execute(sql, args).fetchall()
+    except Error as e:
+        print(e)
+
+    return books
+
 def divideIntoSections(_books):
     global books
     global max_section
@@ -258,6 +285,21 @@ def handleFilteredBooks():
         sec_num=section_num, max_section=max_section, hide=0)
 
 
+def handleGenreBooks():
+    global books
+    global section_num
+
+    books = []
+    section_num = 0
+
+    genre_chosen = request.form['genre-filter']
+    
+    raw_books = getBooksByGenre(genre_chosen)
+    divideIntoSections(raw_books)
+
+    return render_template('library/index.html', user=getUser(), university=getUniversity(), books=books[section_num], 
+        sec_num=section_num, max_section=max_section, hide=0)
+
 
 def handleDelete():
     deleteBook(request.form['input'])
@@ -277,7 +319,11 @@ def index():
             return handleRefresh()
 
         if button == "filter books":
-            return handleFilteredBooks()
+            search_filter = request.form["filter"]
+            if search_filter == 'genre':
+                return handleGenreBooks()
+            else:
+                return handleFilteredBooks()
 
         if button == "insert books":
             insertBooks(request.form['title'],request.form['author'],request.form['year'],request.form['isbn'],request.form['copies'])
