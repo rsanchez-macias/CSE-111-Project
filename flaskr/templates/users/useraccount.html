@@ -63,6 +63,13 @@
                 <li class="list-group-item"><b>User: </b> <span id="acc_info">{{account_info[0]}} </span></li>
                 <li class="list-group-item"><b>Email: </b> <span id="acc_info">{{account_info[1]}} </span></li>
                 <li class="list-group-item"><b>University: </b> <span id="acc_info">{{account_info[2]}} </span></li>
+
+                {% if account_info[3] == 'student' %}
+                <li class="list-group-item"><b>Major: </b> <span id="acc_info">{{account_info[4]}} </span></li>
+                {% else %}
+                <li class="list-group-item"><b>Salary: </b> <span id="acc_info">{{account_info[4]}} </span></li>
+                {% endif %}
+
             </ul>
         </div>
         <div id="checked" class="tab-pane fade">

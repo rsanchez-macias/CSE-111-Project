@@ -13,6 +13,8 @@ from datetime import date
 from datetime import timedelta
 from datetime import datetime
 
+from . import library
+
 bp = Blueprint('profile', __name__, url_prefix='/profile/')
 
 
@@ -177,7 +179,51 @@ def updateReservationDate(_isbn, _user_id):
 
     return expiration_date
 
+def getUserMajor():
+    db = get_db()
 
+    major = ""
+    try:
+        sql = """
+            SELECT lu_major 
+            FROM User, LibraryUser
+            WHERE lu_userid = ?
+        """
+
+        args = [g.user['u_userid']]
+        cur = db.cursor()
+
+        major = cur.execute(sql, args).fetchone()
+
+    except Error as e:
+        db.rollback()
+        print(e)
+
+    return major[0]
+
+
+def getUserSalary():
+    db = get_db()
+
+    salary = ""
+    try:
+        sql = """
+            SELECT l_salary
+            FROM User, Librarian
+            WHERE l_userid = ?
+        """
+
+        args = [g.user['u_userid']]
+        cur = db.cursor()
+
+        salary = cur.execute(sql, args).fetchone()
+
+    except Error as e:
+        db.rollback()
+        print(e)
+
+    return salary[0]
+        
 
 @bp.route('/return_book', methods=('GET', 'POST'))
 def return_book():
@@ -233,7 +279,13 @@ def account():
             checked_books[counter]['disabled'] = 0
 
         counter += 1
-        
-    account_info = [g.user['u_name'], g.user['u_email'], getUniversity()[1]]
+    
+    user = library.getUser()
+    account_info = [g.user['u_name'], g.user['u_email'], getUniversity()[1], user]
+
+    if user == 'librarian':
+        account_info.append(getUserSalary())
+    else:
+        account_info.append(getUserMajor())
 
     return render_template('users/useraccount.html', account_info=account_info, checked_books=checked_books, reserved_books=reserved_books)

@@ -29,6 +29,24 @@
             window.location.href = '/book/description/'
         });
     });
+
+    $(document).ready(function () {
+
+        $("select#genre-filter").hide();
+
+        $(".main-filter").change(function () {
+            var value = $(this).find("option:selected").attr("value");
+
+            if (value == "genre") {
+                $("select#genre-filter").show();
+                $(".main-input").hide();
+            } else {
+                $("select#genre-filter").hide();
+                $(".main-input").show();
+            }
+        })
+    });
+
 </script>
 
 <style>
@@ -223,6 +241,17 @@
     #bookImage {
         margin: -7px;
     }
+
+    #genre-filter {
+        height: 31px;
+        font-size: 14px;
+
+        margin-left: -1px;
+        margin-right: 10px;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+    }
+
 </style>
 
 <!-- LIBRARIAN -->
@@ -291,7 +320,7 @@
 {% if user == 'librarian'%}
 {% if not libraryUsers %}
 
-<form id="to-users-form" class="form-inline" method="post">
+<form id="to-users-form" action="{{url_for('library.index')}}" class="form-inline" method="post">
     <h4 id="to-users-title">Go to Library Users</h4>
     <button id="go-to-users" class="btn btn-primary" name="button" type="submit" value="search users">Users</button>
 </form>
@@ -354,14 +383,28 @@
 
 <form id="filter-form" class="form-inline" action="{{url_for('library.index')}}" method="post">
 
-    <select class="form-control" name="filter" id="filter">
-        <option value="title">Title</option>
+    <select class="form-control main-filter" name="filter" id="filter">
+        <option value="title" selected>Title</option>
         <option value="author">Author</option>
         <option value="year">Year</option>
         <option value="isbn">ISBN</option>
+        <option value="genre">Genre</option>
     </select>
 
-    <input name="input" id="input" class="form-control form-control-sm mr-3 w-75" type="text" placeholder="Search"
+    <select class="form-control" name="genre-filter" id="genre-filter">
+        <option value="romance" selected>Romance</option>
+        <option value="comedy">Comedy</option>
+        <option value="humor">Humor</option>
+        <option value="nonfiction">Nonfiction</option>
+        <option value="action">Action</option>
+        <option value="murder">Murder</option>
+        <option value="mystery">Mystery</option>
+        <option value="best-books">Popular</option>
+        <option value="novel">Novel</option>
+        <option value="fantasy">Fantasy</option>
+    </select>
+
+    <input name="input" id="input" class="form-control form-control-sm mr-3 w-75 main-input" type="text" placeholder="Search"
         aria-label="Search">
 
     <button class="btn btn-primary filter-btn" name="button" type="submit" value="filter books">Filter</button>
