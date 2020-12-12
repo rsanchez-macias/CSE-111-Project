@@ -76,6 +76,9 @@ def getFilteredUsers(filter, input):
 def insertBooks(title, author, year, isbn, copies):
     db = get_db()
 
+    if len(isbn) == 0:
+        return
+
     cur = db.cursor()
     checkAuthor = cur.execute('SELECT a_authorid FROM Author WHERE a_authorname = ?', (author,)).fetchone()
 
