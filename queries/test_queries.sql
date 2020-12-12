@@ -23,7 +23,3 @@ FROM CheckedBooks, Books, Author
 WHERE cb_isbn = b_isbn AND 
     b_authorid = a_authorid AND
     cb_userid = 2;
-
-DELETE FROM CheckedBooks
-WHERE cb_isbn = "1234" AND 
-    cb_userid = "1";

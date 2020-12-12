@@ -261,7 +261,7 @@
 </h3>
 
 
-{% if libraryUsers %}
+{% if hide == 1 %}
 
 <hr>
 
@@ -285,6 +285,10 @@
     <button class="btn btn-primary filter-btn" name="button" type="submit" value="refresh users">Refresh</button>
 
 </form>
+
+{% endif %}
+
+{% if libraryUsers %}
 
 <table id="user-table" class="table table-bordered">
     <tr>
@@ -320,12 +324,14 @@
 {% if user == 'librarian'%}
 {% if not libraryUsers %}
 
+{% if hide != 1 %}
 <form id="to-users-form" action="{{url_for('library.index')}}" class="form-inline" method="post">
     <h4 id="to-users-title">Go to Library Users</h4>
     <button id="go-to-users" class="btn btn-primary" name="button" type="submit" value="search users">Users</button>
 </form>
 
 <hr>
+{% endif %}
 
 {% endif %}
 {% endif %}
